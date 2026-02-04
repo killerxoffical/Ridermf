@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rider - Money Food</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        :root {
+            --primary: #FF5722; 
+            --dark: #1e272e;
+            --light: #f5f6fa;
+            --success: #00C853;
+            --white: #ffffff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--light); color: var(--dark); height: 100vh; overflow: hidden; position: relative; }
+        .hidden { display: none !important; }
+        
+        /* AUTH SCREENS */
+        .auth-screen { position: fixed; inset: 0; background: var(--dark); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; color: white; }
+        .logo-img { width: 100px; margin-bottom: 20px; }
+        .form-control { width: 100%; padding: 15px; border-radius: 10px; border: none; margin-bottom: 15px; font-size: 1rem; text-align: center; letter-spacing: 2px; font-weight: 600; }
+        .btn { padding: 15px; width: 100%; border: none; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* SCANNING DASHBOARD */
+        #scanning-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #121212; color: white; text-align: center; }
+        .radar-container { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
+        .radar-circle { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid rgba(255, 87, 34, 0.3); animation: pulse 2s infinite; }
+        .radar-circle:nth-child(2) { width: 70%; height: 70%; animation-delay: 0.5s; }
+        .radar-circle:nth-child(3) { width: 40%; height: 40%; animation-delay: 1s; }
+        .radar-sweep { position: absolute; width: 50%; height: 50%; background: linear-gradient(45deg, rgba(255,87,34,0) 0%, rgba(255,87,34,0.8) 100%); top: 0; right: 0; border-radius: 0 100% 0 0; transform-origin: 0% 100%; animation: sweep 2s linear infinite; }
+        .app-logo-center { width: 60px; height: 60px; z-index: 10; border-radius: 50%; background: white; padding: 5px; }
+        @keyframes sweep { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        
+        /* INCOMING ORDER MODAL */
+        .incoming-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; padding-bottom: 40px; }
+        .incoming-card { background: white; border-radius: 20px; padding: 20px; text-align: center; animation: slideUp 0.3s; }
+        .ring-icon { font-size: 3rem; color: var(--primary); animation: shake 0.5s infinite; margin-bottom: 10px; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
+
+        /* ACTIVE DELIVERY SCREEN */
+        #delivery-screen { height: 100vh; position: relative; display: flex; flex-direction: column; }
+        #map-view { flex: 1; width: 100%; background: #eee; z-index: 1; }
+        
+        /* BOTTOM SHEET */
+        .bottom-sheet { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-radius: 25px 25px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 100; transition: transform 0.3s ease-out; transform: translateY(0); max-height: 85vh; display: flex; flex-direction: column; }
+        .sheet-handle { width: 50px; height: 5px; background: #ddd; border-radius: 10px; margin: 10px auto; }
+        .sheet-header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; cursor: pointer; }
+        .sheet-content { padding: 20px; overflow-y: auto; transition: 0.3s; height: 0; opacity: 0; }
+        .bottom-sheet.expanded .sheet-content { height: auto; opacity: 1; padding-bottom: 100px; }
+        
+        /* Order Details */
+        .order-info-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .customer-card { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 10px; }
+        .cust-avatar { width: 50px; height: 50px; background: #ddd; border-radius: 50%; object-fit: cover; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; background: #eee; }
+        .status-badge.cod { background: #FFECB3; color: #FF6F00; }
+        .status-badge.paid { background: #E8F5E9; color: #2E7D32; }
+        
+        /* Action Bar */
+        .action-bar { padding: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: white; border-top: 1px solid #eee; position: sticky; bottom: 0; }
+        .action-btn { border: none; border-radius: 12px; height: 50px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-call { background: #009688; }
+        .btn-loc { background: #2196F3; }
+        .btn-main { background: var(--primary); grid-column: span 3; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-main.finish { background: var(--success); }
+
+        /* Items List */
+        .item-row { display: flex; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+        .item-img { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; margin-right: 10px; }
+
+        /* Loader & Toast */
+        .loader-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; display: flex; justify-content: center; align-items: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 6000; }
+        .toast { background: #333; color: white; padding: 10px 20px; border-radius: 20px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+    <div id="loader" class="loader-overlay hidden"><div class="spinner"></div></div>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen" class="auth-screen">
+        <img src="https://cdn-icons-png.flaticon.com/512/7541/7541900.png" class="logo-img">
+        <h2 style="margin-bottom:5px">Rider Login</h2>
+        <p style="font-size:0.8rem; opacity:0.7; margin-bottom:30px">Enter your license key provided by Admin</p>
+        
+        <input type="text" id="license-input" class="form-control" placeholder="LICENSE KEY (e.g. RID-1234)">
+        <button class="btn btn-primary" onclick="verifyLicense()">NEXT</button>
+    </div>
+
+    <!-- 2. OTP SCREEN -->
+    <div id="otp-screen" class="auth-screen hidden">
+        <img src="https://cdn-icons-png.flaticon.com/512/11433/11433306.png" class="logo-img" style="width:80px">
+        <h3>Verify Identity</h3>
+        <p style="font-size:0.9rem; margin-bottom:20px; color:#aaa">Admin has received your OTP request.<br>Enter the code shown in Admin Panel.</p>
+        <input type="number" id="otp-input" class="form-control" placeholder="6-DIGIT OTP">
+        <button class="btn btn-primary" onclick="verifyOtp()">LOGIN</button>
+    </div>
+
+    <!-- 3. DASHBOARD (SCANNING) -->
+    <div id="scanning-screen" class="hidden">
+        <div style="position: absolute; top: 20px; left: 20px; text-align: left;">
+            <div style="font-size: 1.2rem; font-weight: bold;" id="rider-name-display">Rider</div>
+            <div style="font-size: 0.8rem; color: #888;">Status: <span style="color:var(--success)">Online</span></div>
+        </div>
+        <button onclick="logout()" style="position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid #444; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Logout</button>
+
+        <div class="radar-container">
+            <div class="radar-circle"></div>
+            <div class="radar-circle"></div>
+            <div class="radar-circle"></div>
+            <div class="radar-sweep"></div>
+            <img src="https://cdn-icons-png.flaticon.com/512/7541/7541900.png" class="app-logo-center">
+        </div>
+        <h3>Scanning for Orders...</h3>
+        <p style="opacity: 0.6; font-size: 0.9rem;">Stay on this screen. Orders will pop up here.</p>
+    </div>
+
+    <!-- 4. INCOMING ORDER ALERT -->
+    <div id="incoming-modal" class="incoming-modal hidden">
+        <div class="incoming-card">
+            <i class="fas fa-bell ring-icon"></i>
+            <h2>New Order Request!</h2>
+            <p style="margin: 10px 0; font-size: 1.1rem;">Distance: <span id="alert-dist" style="font-weight:bold">Calculating...</span></p>
+            <div style="background:#f5f5f5; padding:10px; border-radius:10px; margin-bottom:15px">
+                <div style="font-weight:bold" id="alert-addr">Fetching address...</div>
+                <div style="color:var(--primary); font-weight:bold; margin-top:5px" id="alert-price">0 ৳</div>
+            </div>
+            <button class="btn btn-primary" style="font-size:1.2rem" onclick="acceptOrder()">ACCEPT DELIVERY</button>
+            <button class="btn" style="background:transparent; color:#777; margin-top:10px" onclick="ignoreOrder()">Ignore</button>
+        </div>
+    </div>
+
+    <!-- 5. ACTIVE DELIVERY SCREEN -->
+    <div id="delivery-screen" class="hidden">
+        <div id="map-view"></div> <!-- Leaflet Map -->
+
+        <!-- Bottom Sheet -->
+        <div class="bottom-sheet" id="bottom-sheet">
+            <div class="sheet-header" onclick="toggleSheet()">
+                <div>
+                    <div style="font-size: 0.8rem; color: #777;">Order ID</div>
+                    <div style="font-weight: bold; font-size: 1.1rem;" id="active-order-id">#Loading</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.8rem; color: #777;">Distance</div>
+                    <div style="font-weight: bold; color: var(--primary);" id="active-dist">0 km</div>
+                </div>
+            </div>
+            
+            <div class="sheet-handle" onclick="toggleSheet()"></div>
+
+            <div class="sheet-content">
+                <!-- Customer Info -->
+                <div class="customer-card">
+                    <img src="" id="cust-img" class="cust-avatar">
+                    <div style="flex:1">
+                        <div style="font-weight: bold;" id="cust-name">Customer Name</div>
+                        <div style="font-size: 0.8rem; color: #777;" id="cust-phone">017...</div>
+                    </div>
+                    <div id="pay-status-badge" class="status-badge cod">COD</div>
+                </div>
+
+                <!-- Address -->
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 0.8rem; font-weight: bold; color: #555; text-transform: uppercase;">Delivery Location</div>
+                    <div style="font-size: 1rem;" id="cust-addr">Loading address...</div>
+                </div>
+
+                <!-- Items -->
+                <div style="font-size: 0.8rem; font-weight: bold; color: #555; text-transform: uppercase; margin-bottom: 10px;">Order Items</div>
+                <div id="order-items-list"></div>
+
+                <!-- Bill -->
+                <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                    <div class="order-info-row"><span>Subtotal</span><span id="bill-sub">0</span></div>
+                    <div class="order-info-row"><span>Delivery</span><span id="bill-del">0</span></div>
+                    <div class="order-info-row" style="font-weight: bold; font-size: 1.1rem;"><span>Collect from Customer</span><span style="color:var(--primary)" id="bill-total">0</span></div>
+                    <div style="background:#fff3e0; padding:8px; font-size:0.8rem; border-radius:5px; margin-top:5px; display:none" id="online-note">⚠️ Already Paid Online. Do not collect cash.</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-bar">
+                <button class="action-btn btn-call" onclick="callCustomer()"><i class="fas fa-phone"></i></button>
+                <button class="action-btn btn-loc" onclick="openGoogleMap()"><i class="fas fa-map-marker-alt"></i></button>
+                <button class="action-btn btn-call" style="background:#607D8B" onclick="toggleSheet()"><i class="fas fa-info"></i></button>
+                
+                <button id="main-action-btn" class="action-btn btn-main" onclick="updateOrderStatus()">PICKUP ORDER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, onValue, set, update, get, child, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-QeK211wkCYaO8hjJS89P0lldCTHMp38", authDomain: "topup-52074.firebaseapp.com",
+            databaseURL: "https://topup-52074-default-rtdb.firebaseio.com", projectId: "topup-52074", storageBucket: "topup-52074.appspot.com",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // STATE
+        let riderData = null;
+        let currentOrder = null;
+        let riderLocation = { lat: 23.8103, lng: 90.4125 }; // Default Dhaka
+        let map, riderMarker, destMarker, routeLine;
+        let incomingOrderRef = null;
+
+        // --- UTILS ---
+        window.showToast=(m)=>{const c=document.getElementById('toast-container'),d=document.createElement('div');d.className='toast';d.innerHTML=m;c.appendChild(d);setTimeout(()=>d.remove(),3000);};
+        const toggleLoader=s=>document.getElementById('loader').classList.toggle('hidden',!s);
+
+        // --- AUTH FLOW ---
+        window.onload = () => {
+            const storedRider = localStorage.getItem('rider_session');
+            if(storedRider) {
+                riderData = JSON.parse(storedRider);
+                startApp();
+            }
+        };
+
+        window.verifyLicense = async () => {
+            const key = document.getElementById('license-input').value.trim();
+            if(!key) return showToast("Enter License Key");
+            
+            toggleLoader(true);
+            // Check if rider exists in DB (Admin creates riders)
+            const snapshot = await get(ref(db, 'riders'));
+            let valid = false;
+            let rKey = "";
+            
+            snapshot.forEach(child => {
+                if(child.val().license === key) {
+                    valid = true;
+                    riderData = { key: child.key, ...child.val() };
+                }
+            });
+
+            if(valid) {
+                // Generate OTP & Save to DB for Admin to see
+                const otp = Math.floor(100000 + Math.random() * 900000);
+                await set(ref(db, `rider_requests/${riderData.key}`), {
+                    licenseEmail: riderData.license, // Using license as ID
+                    otp: otp,
+                    timestamp: Date.now()
+                });
+                
+                // Store OTP locally to verify (simplified) or verify against DB in next step
+                // Ideally, verify against DB. For now, we save generated OTP to memory
+                riderData.tempOtp = otp;
+
+                toggleLoader(false);
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('otp-screen').classList.remove('hidden');
+                showToast("Ask Admin for OTP");
+            } else {
+                toggleLoader(false);
+                showToast("Invalid License Key");
+            }
+        };
+
+        window.verifyOtp = async () => {
+            const input = document.getElementById('otp-input').value;
+            if(parseInt(input) === riderData.tempOtp) {
+                // Success
+                await update(ref(db, `riders/${riderData.key}`), { status: 'verified', active: true });
+                await remove(ref(db, `rider_requests/${riderData.key}`)); // Cleanup
+                
+                localStorage.setItem('rider_session', JSON.stringify(riderData));
+                startApp();
+            } else {
+                showToast("Wrong OTP");
+            }
+        };
+
+        window.logout = () => {
+            localStorage.removeItem('rider_session');
+            location.reload();
+        };
+
+        // --- MAIN APP ---
+        function startApp() {
+            document.querySelectorAll('.auth-screen').forEach(e=>e.classList.add('hidden'));
+            document.getElementById('scanning-screen').classList.remove('hidden');
+            document.getElementById('rider-name-display').innerText = riderData.name;
+
+            // Start Location Tracking
+            if(navigator.geolocation) {
+                navigator.geolocation.watchPosition(pos => {
+                    riderLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    // Update DB
+                    update(ref(db, `riders/${riderData.key}`), { 
+                        lat: riderLocation.lat, 
+                        lng: riderLocation.lng,
+                        lastSeen: Date.now()
+                    });
+                    
+                    if(currentOrder && map) updateMap(); // Update live map if active
+                }, err => console.log(err), { enableHighAccuracy: true });
+            }
+
+            // LISTEN FOR ORDERS
+            listenForOrders();
+            checkActiveOrders();
+        }
+
+        // --- ORDER LOGIC ---
+        function listenForOrders() {
+            // Listen to ALL orders. If any is pending, show alert.
+            // Note: In real app, filter server-side. Here client-side.
+            onValue(ref(db, 'orders'), (snapshot) => {
+                if(currentOrder) return; // Already busy
+
+                let foundPending = false;
+                if(snapshot.exists()) {
+                    snapshot.forEach(userSnap => {
+                        userSnap.forEach(orderSnap => {
+                            const o = orderSnap.val();
+                            if(o.status === 'pending') {
+                                // Found a pending order!
+                                incomingOrderRef = { uid: userSnap.key, oid: orderSnap.key, data: o };
+                                showIncomingAlert(o);
+                                foundPending = true;
+                            }
+                        });
+                    });
+                }
+                if(!foundPending) {
+                    document.getElementById('incoming-modal').classList.add('hidden');
+                }
+            });
+        }
+
+        function showIncomingAlert(o) {
+            document.getElementById('incoming-modal').classList.remove('hidden');
+            
+            // Calc Distance if location available
+            if(o.location && o.location.enabled) {
+                const d = getDist(riderLocation.lat, riderLocation.lng, o.location.lat, o.location.lng);
+                document.getElementById('alert-dist').innerText = d.toFixed(1) + " km away";
+            } else {
+                document.getElementById('alert-dist').innerText = "Location Unknown";
+            }
+
+            let addr = "Address details unavailable";
+            if(o.address) addr = o.address.area === 'DOHS' ? `DOHS: Rd ${o.address.road}, H ${o.address.house}` : o.address.details;
+            
+            document.getElementById('alert-addr').innerText = addr;
+            document.getElementById('alert-price').innerText = "Total: ৳" + (o.payment?.finalPayable || o.totals.grandTotal);
+        }
+
+        window.ignoreOrder = () => {
+            document.getElementById('incoming-modal').classList.add('hidden');
+            // Logic to prevent showing same order immediately could be added here
+        };
+
+        window.acceptOrder = async () => {
+            if(!incomingOrderRef) return;
+            toggleLoader(true);
+            
+            // Attempt to claim
+            const orderPath = `orders/${incomingOrderRef.uid}/${incomingOrderRef.oid}`;
+            const statusRef = ref(db, `${orderPath}/status`);
+            
+            // Check if still pending
+            const s = await get(statusRef);
+            if(s.val() === 'pending') {
+                await update(ref(db, orderPath), {
+                    status: 'accepted',
+                    riderId: riderData.key,
+                    riderName: riderData.name,
+                    riderPhone: riderData.phone || 'N/A'
+                });
+                
+                currentOrder = { id: incomingOrderRef.oid, uid: incomingOrderRef.uid, ...incomingOrderRef.data };
+                currentOrder.status = 'accepted'; // Update local
+                
+                document.getElementById('incoming-modal').classList.add('hidden');
+                loadActiveDeliveryUI();
+            } else {
+                showToast("Order already taken!");
+                document.getElementById('incoming-modal').classList.add('hidden');
+            }
+            toggleLoader(false);
+        };
+
+        function checkActiveOrders() {
+            // Check if rider already has an active order on reload
+            onValue(ref(db, 'orders'), (snapshot) => {
+                if(snapshot.exists()) {
+                    snapshot.forEach(userSnap => {
+                        userSnap.forEach(orderSnap => {
+                            const o = orderSnap.val();
+                            if(o.riderId === riderData.key && (o.status === 'accepted' || o.status === 'ontheway')) {
+                                currentOrder = { id: orderSnap.key, uid: userSnap.key, ...o };
+                                document.getElementById('incoming-modal').classList.add('hidden');
+                                loadActiveDeliveryUI();
+                            }
+                        });
+                    });
+                }
+            }, { onlyOnce: true });
+        }
+
+        // --- ACTIVE DELIVERY UI ---
+        function loadActiveDeliveryUI() {
+            document.getElementById('scanning-screen').classList.add('hidden');
+            document.getElementById('delivery-screen').classList.remove('hidden');
+
+            // Init Map
+            if(!map) {
+                map = L.map('map-view').setView([riderLocation.lat, riderLocation.lng], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                riderMarker = L.marker([riderLocation.lat, riderLocation.lng]).addTo(map).bindPopup("You");
+            }
+            updateMap();
+
+            // Fill Details
+            document.getElementById('active-order-id').innerText = "#" + currentOrder.id.slice(-6).toUpperCase();
+            
+            // Fetch Customer Profile for Name/Phone/Pic
+            get(ref(db, `users/${currentOrder.uid}/profile`)).then(s => {
+                const p = s.val();
+                document.getElementById('cust-name').innerText = p.displayName || "Customer";
+                document.getElementById('cust-phone').innerText = p.phone || currentOrder.address.contactNumber;
+                document.getElementById('cust-img').src = p.avatarUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                currentOrder.customerPhone = p.phone || currentOrder.address.contactNumber;
+            });
+
+            // Address
+            let addr = "";
+            if(currentOrder.address.area === 'DOHS') addr = `DOHS, Avenue: ${currentOrder.address.avenue}, Road: ${currentOrder.address.road}, House: ${currentOrder.address.house}`;
+            else addr = `${currentOrder.address.area} - ${currentOrder.address.details}`;
+            document.getElementById('cust-addr').innerText = addr;
+
+            // Items
+            const itemsCont = document.getElementById('order-items-list');
+            itemsCont.innerHTML = currentOrder.items.map(i => `
+                <div class="item-row">
+                    <img src="${i.image}" class="item-img">
+                    <div style="flex:1; font-size:0.9rem">${i.name}</div>
+                    <div style="font-weight:bold">x${i.qty}</div>
+                </div>
+            `).join('');
+
+            // Bill
+            const pay = currentOrder.payment;
+            const isCod = pay.method === 'cod';
+            const badge = document.getElementById('pay-status-badge');
+            const note = document.getElementById('online-note');
+            const mainBtn = document.getElementById('main-action-btn');
+
+            if(isCod) {
+                badge.innerText = "Cash On Delivery"; badge.className = "status-badge cod";
+                document.getElementById('bill-total').innerText = "৳ " + currentOrder.totals.grandTotal;
+                note.style.display = "none";
+            } else {
+                const isApproved = pay.status === 'approved';
+                badge.innerText = isApproved ? "PAID ONLINE" : "PENDING VERIFICATION"; 
+                badge.className = isApproved ? "status-badge paid" : "status-badge cod";
+                document.getElementById('bill-total').innerText = "৳ 0 (Paid)";
+                note.style.display = "block";
+            }
+            
+            document.getElementById('bill-sub').innerText = currentOrder.totals.subTotal;
+            document.getElementById('bill-del').innerText = currentOrder.totals.deliveryCharge;
+
+            // Button State
+            if(currentOrder.status === 'accepted') {
+                mainBtn.innerText = "PICKUP ORDER";
+                mainBtn.className = "action-btn btn-main";
+                mainBtn.onclick = () => updateOrderStatus('ontheway');
+            } else if (currentOrder.status === 'ontheway') {
+                mainBtn.innerText = "DROP / COMPLETE";
+                mainBtn.className = "action-btn btn-main finish";
+                mainBtn.onclick = () => updateOrderStatus('delivered');
+            }
+        }
+
+        function updateMap() {
+            if(!map) return;
+            
+            // Update Rider Marker
+            riderMarker.setLatLng([riderLocation.lat, riderLocation.lng]);
+            map.setView([riderLocation.lat, riderLocation.lng]);
+
+            // If Order has location, show dest marker & line
+            if(currentOrder.location && currentOrder.location.enabled) {
+                const dest = [currentOrder.location.lat, currentOrder.location.lng];
+                
+                if(!destMarker) destMarker = L.marker(dest).addTo(map).bindPopup("Customer");
+                else destMarker.setLatLng(dest);
+
+                if(routeLine) map.removeLayer(routeLine);
+                routeLine = L.polyline([[riderLocation.lat, riderLocation.lng], dest], {color: 'blue', dashArray: '5, 10'}).addTo(map);
+                
+                // Fit bounds
+                const group = new L.featureGroup([riderMarker, destMarker]);
+                map.fitBounds(group.getBounds(), {padding: [50, 50]});
+                
+                // Update Distance Text
+                const d = getDist(riderLocation.lat, riderLocation.lng, dest[0], dest[1]);
+                document.getElementById('active-dist').innerText = d.toFixed(1) + " km";
+            }
+        }
+
+        window.toggleSheet = () => {
+            document.getElementById('bottom-sheet').classList.toggle('expanded');
+        };
+
+        window.updateOrderStatus = async (status) => {
+            if(!confirm(`Change status to ${status}?`)) return;
+            
+            toggleLoader(true);
+            const path = `orders/${currentOrder.uid}/${currentOrder.id}`;
+            let updates = { status: status };
+            if(status === 'delivered') updates.completedAt = Date.now();
+
+            await update(ref(db, path), updates);
+            currentOrder.status = status;
+
+            toggleLoader(false);
+
+            if(status === 'delivered') {
+                showToast("Order Completed!");
+                // Reset to scanning
+                currentOrder = null;
+                document.getElementById('delivery-screen').classList.add('hidden');
+                document.getElementById('scanning-screen').classList.remove('hidden');
+                // Clean Map
+                if(destMarker) map.removeLayer(destMarker);
+                if(routeLine) map.removeLayer(routeLine);
+                destMarker = null; routeLine = null;
+            } else {
+                loadActiveDeliveryUI(); // Update Button text
+            }
+        };
+
+        window.callCustomer = () => {
+            if(currentOrder && currentOrder.customerPhone) {
+                window.open(`tel:${currentOrder.customerPhone}`);
+            } else {
+                showToast("Phone number unavailable");
+            }
+        };
+
+        window.openGoogleMap = () => {
+            if(currentOrder && currentOrder.location && currentOrder.location.enabled) {
+                const lat = currentOrder.location.lat;
+                const lng = currentOrder.location.lng;
+                window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`);
+            } else {
+                showToast("Customer did not share live location");
+            }
+        };
+
+        // Haversine Distance
+        function getDist(lat1, lon1, lat2, lon2) {
+            const R = 6371; // km
+            const dLat = (lat2-lat1) * Math.PI/180;
+            const dLon = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * 
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+    </script>
+</body>
+</html>
