@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rider Pro - Money Food</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Money Rider - Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         :root {
             --primary: #FF5722; 
+            --primary-grad: linear-gradient(135deg, #FF5722, #FF8A65);
             --dark: #121212;
-            --surface: #1E1E1E;
-            --light: #F4F7FC;
+            --surface: #ffffff;
+            --bg: #F2F4F8;
             --success: #00C853;
-            --text-main: #2D3436;
-            --shadow: 0 10px 30px rgba(0,0,0,0.15);
+            --shadow-soft: 0 10px 40px rgba(255, 87, 34, 0.15);
+            --shadow-hard: 0 10px 30px rgba(255, 87, 34, 0.4);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--light); color: var(--text-main); height: 100vh; overflow: hidden; position: relative; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #333; height: 100vh; overflow: hidden; position: relative; }
         .hidden { display: none !important; }
 
         /* --- SPLASH SCREEN --- */
@@ -28,292 +29,264 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             color: white; transition: opacity 0.5s ease;
         }
-        .splash-logo { width: 100px; height: 100px; background: white; border-radius: 50%; padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.2); animation: pulse 2s infinite; display:flex; justify-content:center; align-items:center; }
-        .splash-text { margin-top: 20px; font-size: 1.5rem; font-weight: 700; letter-spacing: 2px; }
+        .splash-icon { 
+            font-size: 60px; color: var(--primary); background: white; 
+            width: 120px; height: 120px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.2);
+            animation: drive 1.5s infinite ease-in-out;
+        }
+        @keyframes drive { 
+            0% { transform: translateX(-10px) rotate(-5deg); }
+            50% { transform: translateX(10px) rotate(5deg); }
+            100% { transform: translateX(-10px) rotate(-5deg); }
+        }
+        .splash-text { margin-top: 25px; font-size: 2rem; font-weight: 800; letter-spacing: 1px; }
+
+        /* --- BUTTONS (ORANGE THEME) --- */
+        .btn-orange-round {
+            width: 45px; height: 45px; border-radius: 12px;
+            background: var(--primary); color: white;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-hard); cursor: pointer;
+            border: 2px solid white; transition: 0.2s;
+        }
+        .btn-orange-round:active { transform: scale(0.9); }
+        
+        .top-left-btn { position: absolute; top: 20px; left: 20px; z-index: 1000; }
+        .top-right-group { position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 15px; }
 
         /* --- AUTH SCREEN --- */
         .auth-screen { position: fixed; inset: 0; background: white; z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; }
-        .login-hero { width: 80%; max-width: 300px; margin-bottom: 30px; }
-        .form-control { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid #eee; margin-bottom: 20px; font-size: 1.1rem; text-align: center; letter-spacing: 2px; font-weight: 600; background: #f9f9f9; color: #333; outline: none; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
+        .form-control { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid #eee; margin-bottom: 20px; font-size: 1.1rem; text-align: center; background: #f8f9fa; font-weight: 600; outline: none; }
         .form-control:focus { border-color: var(--primary); background: white; }
-        .btn { padding: 16px; width: 100%; border: none; border-radius: 15px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3); }
-        .btn-primary { background: var(--primary); color: white; }
+        .btn-main { padding: 16px; width: 100%; border: none; border-radius: 15px; font-weight: 700; font-size: 1.1rem; cursor: pointer; background: var(--primary); color: white; box-shadow: var(--shadow-hard); }
 
         /* --- SIDEBAR --- */
-        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2100; opacity: 0; pointer-events: none; transition: 0.3s; }
-        .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: white; z-index: 2200; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; display: flex; flex-direction: column; }
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2100; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(3px); }
+        .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: white; z-index: 2200; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; display: flex; flex-direction: column; border-radius: 0 20px 20px 0; }
         .sidebar.open { transform: translateX(0); }
         .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
         
-        .sidebar-header { margin-bottom: 30px; display: flex; align-items: center; gap: 15px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
-        .sidebar-avatar { width: 60px; height: 60px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #777; }
-        .menu-item { padding: 15px; border-radius: 12px; margin-bottom: 5px; color: #444; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 15px; }
-        .menu-item:active { background: #f5f5f5; }
-        .menu-item i { width: 25px; color: var(--primary); }
-
-        /* --- TOP BAR (CENTERED) --- */
-        .top-bar-overlay { 
-            position: absolute; top: 0; left: 0; width: 100%; z-index: 1000; 
-            padding: 15px 20px; 
-            display: flex; justify-content: space-between; align-items: flex-start; 
-            pointer-events: none;
-        }
-        .menu-btn, .refresh-btn { 
-            pointer-events: auto; width: 45px; height: 45px; 
-            background: white; border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; 
-            font-size: 1.2rem; color: #333; transition: 0.2s; 
-        }
-        .center-pill {
-            pointer-events: auto;
-            background: white; padding: 10px 25px; border-radius: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            display: flex; flex-direction: column; align-items: center;
-            position: absolute; left: 50%; transform: translateX(-50%); top: 15px;
-        }
-        .online-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 8px var(--success); }
-
         /* --- SCANNING RADAR --- */
-        #scanning-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #121212; color: white; text-align: center; }
-        .radar-container { position: relative; width: 220px; height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
-        .radar-circle { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid rgba(255, 87, 34, 0.3); }
-        .radar-circle:nth-child(2) { width: 70%; height: 70%; }
-        .radar-circle:nth-child(3) { width: 40%; height: 40%; }
-        .radar-sweep { position: absolute; width: 50%; height: 50%; background: linear-gradient(45deg, rgba(255,87,34,0) 0%, rgba(255,87,34,0.8) 100%); top: 0; right: 0; border-radius: 0 100% 0 0; transform-origin: 0% 100%; animation: sweep 2s linear infinite; }
-        .logo-center { width: 60px; height: 60px; z-index: 10; border-radius: 50%; background: white; padding: 5px; }
-        @keyframes sweep { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #scanning-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #1a1a1a; color: white; }
+        .radar-box { position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; margin-bottom: 40px; }
+        .pulse-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--primary); opacity: 0; animation: ripple 2s infinite; }
+        .pulse-ring:nth-child(2) { animation-delay: 0.5s; }
+        .pulse-ring:nth-child(3) { animation-delay: 1s; }
+        .center-logo { width: 70px; height: 70px; background: white; border-radius: 50%; padding: 10px; z-index: 5; box-shadow: 0 0 30px var(--primary); }
+        @keyframes ripple { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
 
         /* --- DELIVERY SCREEN --- */
         #map-view { width: 100%; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         
+        /* BOTTOM SHEET (The Magic Part) */
         .bottom-sheet {
             position: absolute; bottom: 0; left: 0; width: 100%;
             background: white; border-radius: 30px 30px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.15); z-index: 1100;
-            transform: translateY(calc(100% - 140px)); /* Peek mode */
-            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 -10px 50px rgba(0,0,0,0.2); z-index: 1100;
+            /* Initially only show header (approx 80px) */
+            transform: translateY(calc(100% - 85px)); 
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             display: flex; flex-direction: column; max-height: 85vh;
         }
         .bottom-sheet.open { transform: translateY(0); }
-        .sheet-handle-area { width: 100%; padding: 15px 0; display: flex; justify-content: center; cursor: grab; background: white; border-radius: 30px 30px 0 0; }
-        .custom-handle { width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; font-size: 1.2rem; margin-top: -40px; box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3); border: 3px solid white; animation: bounceBtn 2s infinite; }
-        @keyframes bounceBtn { 0%, 100% {transform:translateY(0);} 50% {transform:translateY(-5px);} }
-        .sheet-content { padding: 0 25px 30px 25px; overflow-y: auto; }
+        
+        .sheet-drag-area { width: 100%; padding: 15px 0 10px; display: flex; flex-direction: column; align-items: center; cursor: grab; background: white; border-radius: 30px 30px 0 0; }
+        .sheet-handle { width: 60px; height: 6px; background: #e0e0e0; border-radius: 10px; margin-bottom: 10px; position: relative; overflow: hidden; }
+        /* Animated Handle */
+        .sheet-handle::after { content:''; position: absolute; top:0; left:0; width:100%; height:100%; background: var(--primary); transform: translateX(-100%); animation: loadLine 2s infinite; }
+        @keyframes loadLine { 100% { transform: translateX(100%); } }
 
-        /* Order Info */
-        .info-grid { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .cust-avatar { width: 50px; height: 50px; border-radius: 12px; object-fit: cover; background: #eee; }
-        .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .q-btn { padding: 12px; border-radius: 12px; border: none; font-weight: 600; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .q-btn.call { background: #37474F; }
-        .q-btn.loc { background: #0288D1; }
+        .sheet-minimized-info { font-size: 1.2rem; font-weight: 800; color: #333; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+        
+        .sheet-content { padding: 10px 25px 30px; overflow-y: auto; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        .bottom-sheet.open .sheet-content { opacity: 1; pointer-events: auto; }
 
-        /* Bill */
-        .bill-card { background: #FAFAFA; border: 1px solid #eee; padding: 15px; border-radius: 15px; margin-bottom: 25px; }
-        .bill-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; color: #555; }
-        .bill-total { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; font-weight: 700; font-size: 1.1rem; color: var(--text-main); }
+        /* Premium Location Card */
+        .loc-card { background: #FFF3E0; border: 1px solid #FFCCBC; padding: 15px; border-radius: 15px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; position: relative; overflow: hidden; }
+        .loc-card::before { content:''; position: absolute; width: 5px; height: 100%; background: var(--primary); left: 0; top: 0; }
+        .loc-icon { font-size: 1.5rem; color: var(--primary); }
 
-        /* SLIDER */
-        .slider-wrapper { margin-top: 10px; position: relative; height: 60px; background: #eee; border-radius: 30px; overflow: hidden; display: flex; align-items: center; user-select: none; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
-        .slider-text { position: absolute; width: 100%; text-align: center; font-weight: 700; color: #888; letter-spacing: 1px; z-index: 1; pointer-events: none; }
-        .slider-thumb { width: 54px; height: 54px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; position: absolute; left: 3px; z-index: 2; cursor: grab; box-shadow: 2px 0 10px rgba(0,0,0,0.2); }
-        .slider-wrapper.finish .slider-thumb { background: var(--success); }
+        /* Premium Call Button */
+        .btn-call-premium {
+            background: var(--primary-grad); color: white;
+            padding: 15px; border-radius: 15px; border: none;
+            width: 100%; font-weight: 700; font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: var(--shadow-hard); cursor: pointer; margin-top: 10px;
+        }
+        
+        /* Slider with Orange Shadow */
+        .slider-wrapper { margin-top: 20px; position: relative; height: 65px; background: #fff; border: 2px solid #eee; border-radius: 35px; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
+        .slider-thumb { width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; position: absolute; left: 3px; z-index: 2; box-shadow: 10px 0 20px rgba(255, 87, 34, 0.6); cursor: grab; }
+        .slider-text { width: 100%; text-align: center; font-weight: 700; color: #aaa; z-index: 1; font-size: 0.9rem; letter-spacing: 2px; }
 
-        /* HOLD LIST */
-        #hold-list { flex: 1; overflow-y: auto; margin-top: 10px; }
-        .hold-card { background: #fff3e0; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ffe0b2; }
-        .hold-actions { display: flex; gap: 10px; margin-top: 8px; }
-        .btn-mini { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; flex: 1; font-weight: 600; }
+        /* Image Popup */
+        .img-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .img-modal.active { opacity: 1; pointer-events: auto; }
+        .img-modal img { max-width: 90%; max-height: 80%; border-radius: 20px; border: 4px solid var(--primary); box-shadow: 0 0 50px rgba(255, 87, 34, 0.5); transform: scale(0.8); transition: 0.3s; }
+        .img-modal.active img { transform: scale(1); }
 
-        /* HISTORY */
-        .page-content { padding: 80px 20px 20px 20px; height: 100vh; overflow-y: auto; background: var(--light); }
-        .history-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid var(--success); position: relative; }
-        .hist-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; }
-        .hist-badge { position: absolute; top: 15px; right: 15px; background: #E8F5E9; color: var(--success); padding: 3px 8px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; }
+        /* Loader */
+        .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 9000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .spinner { width: 60px; height: 60px; border: 6px solid #eee; border-top: 6px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* UTILS */
-        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 30px; z-index: 9999; }
+        /* INCOMING */
         .incoming-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; }
-        .incoming-card { background: white; border-radius: 25px; padding: 25px; text-align: center; animation: slideUp 0.3s; }
-        .alert-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .btn-hold { background: #FFA000; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 1rem; }
-        .btn-accept { background: var(--success); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 1rem; }
+        .incoming-card { background: white; border-radius: 25px; padding: 30px 20px; text-align: center; animation: slideUp 0.3s; }
         @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)}}
 
-        /* MAP MARKERS */
-        .marker-pin { width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 3px solid white; position: relative; font-size: 1.2rem; }
-        .marker-rider { background: #00C853; color: white; }
-        .marker-customer { background: #FF5722; color: white; }
-        
-        .profile-img-lg { width: 100px; height: 100px; background: var(--primary); color:white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: 0 5px 15px rgba(255, 87, 34, 0.3); }
-
-        /* Loader Overlay */
-        .loader-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9000; display: flex; justify-content: center; align-items: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* Items */
+        .item-row { display: flex; align-items: center; gap: 15px; padding: 10px; border: 1px solid #FFCCBC; background: #fffbfb; border-radius: 12px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
     <div id="loader" class="loader-overlay hidden"><div class="spinner"></div></div>
-    
+
+    <!-- IMAGE POPUP -->
+    <div id="img-popup" class="img-modal" onclick="closeImgPopup()">
+        <img id="popup-img-src" src="">
+    </div>
+
     <!-- SPLASH SCREEN -->
     <div id="splash-screen">
-        <div class="splash-logo"><i class="fas fa-motorcycle" style="font-size: 50px; color: var(--primary);"></i></div>
-        <div class="splash-text">Money Food</div>
+        <div class="splash-icon"><i class="fas fa-motorcycle"></i></div>
+        <div class="splash-text">Money Rider</div>
     </div>
 
-    <!-- AUTH SCREEN -->
+    <!-- LOGIN -->
     <div id="login-screen" class="auth-screen hidden">
-        <img src="https://svgshare.com/i/14hT.svg" alt="Delivery" class="login-hero">
-        <h2 style="margin-bottom: 5px; font-weight: 700;">Rider Login</h2>
-        <p style="opacity: 0.6; margin-bottom: 30px;">Premium Delivery Partner</p>
-        
-        <input type="text" id="license-input" class="form-control" placeholder="LICENSE KEY">
-        <button class="btn btn-primary" onclick="checkLicense()">LOGIN TO DASHBOARD</button>
-    </div>
-
-    <div id="otp-screen" class="auth-screen hidden">
-        <h3>Verify Identity</h3>
-        <p style="opacity: 0.7; margin-bottom: 20px;">Check Admin Panel for 6-digit Code</p>
-        <input type="number" id="otp-input" class="form-control" placeholder="OTP CODE">
-        <button class="btn btn-primary" onclick="verifyOtp()">VERIFY ACCOUNT</button>
+        <img src="https://cdn-icons-png.flaticon.com/512/7541/7541900.png" style="width:80px; margin-bottom:20px">
+        <h2 style="margin-bottom:10px">Rider Login</h2>
+        <p style="color:#777; margin-bottom:30px">Deliver & Earn Money</p>
+        <input type="text" id="license-input" class="form-control" placeholder="ENTER LICENSE">
+        <div style="display:flex; gap:10px; margin-bottom:20px; align-self:flex-start; margin-left:10px">
+            <input type="checkbox" id="remember-me"> <label for="remember-me">Remember License</label>
+        </div>
+        <button class="btn-main" onclick="verifyLicense()">START DRIVING</button>
     </div>
 
     <!-- SIDEBAR -->
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-avatar"><i class="fas fa-user-astronaut"></i></div>
+        <div style="margin-bottom:30px; display:flex; align-items:center; gap:15px">
+            <div style="width:60px; height:60px; background:#f0f0f0; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-size:1.5rem"><i class="fas fa-user-astronaut"></i></div>
             <div>
-                <div style="font-weight: 700; font-size: 1.1rem;" id="side-name">Rider</div>
-                <div style="font-size: 0.8rem; color: var(--success);">● Active</div>
+                <h3 id="side-name">Rider</h3>
+                <span style="color:var(--success); font-weight:600">● Active</span>
             </div>
         </div>
-        <div class="menu-item active" onclick="switchPage('scanning')"><i class="fas fa-map"></i> Dashboard</div>
-        <div class="menu-item" onclick="switchPage('history')"><i class="fas fa-history"></i> History</div>
-        <div class="menu-item" onclick="switchPage('profile')"><i class="fas fa-user-edit"></i> My Profile</div>
-        <div style="margin: 10px 0; border-top: 1px solid #eee;"></div>
-        <div style="font-size:0.8rem; color:#888; padding-left:15px; margin-bottom:5px;">HOLD ORDERS</div>
-        <div id="hold-list"></div>
-        <div style="flex:1"></div>
-        <div class="menu-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+        <div style="font-weight:700; color:#aaa; margin-bottom:15px; font-size:0.8rem">HELD ORDERS</div>
+        <div id="hold-list-container" style="flex:1; overflow-y:auto; padding-right:5px"></div>
+        <button class="btn-main" style="background:#333; margin-top:20px" onclick="logout()">LOGOUT</button>
     </div>
 
-    <!-- 1. SCANNING SCREEN -->
-    <div id="page-scanning" class="page-block">
-        <div class="top-bar-overlay">
-            <div class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-            <div class="center-pill">
-                <div style="font-weight: 700; font-size: 0.95rem; color: var(--primary);" id="scan-name">Rider</div>
-                <div style="font-size: 0.75rem; color: #555;"><span class="online-dot"></span> Online</div>
-            </div>
-            <div class="refresh-btn" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i></div>
-        </div>
-        <div id="scanning-screen">
-            <div class="radar-container">
-                <div class="radar-circle"></div>
-                <div class="radar-circle"></div>
-                <div class="radar-circle"></div>
-                <div class="radar-sweep"></div>
-                <img src="https://cdn-icons-png.flaticon.com/512/7541/7541900.png" class="logo-center">
-            </div>
-            <h3 style="font-weight: 500; letter-spacing: 1px; opacity: 0.8;">SCANNING FOR ORDERS...</h3>
-        </div>
-    </div>
-
-    <!-- 2. HISTORY SCREEN -->
-    <div id="page-history" class="page-block hidden">
-        <div class="top-bar-overlay" style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position:fixed;">
-            <div class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-            <div style="font-weight: 700; font-size: 1.2rem; margin-top: 10px;">Order History</div>
-            <div class="refresh-btn" onclick="fetchHistory()"><i class="fas fa-sync-alt"></i></div>
-        </div>
-        <div class="page-content" id="history-list">
-            <div style="text-align:center; padding-top:50px; color:#999">Loading history...</div>
-        </div>
-    </div>
-
-    <!-- 3. PROFILE SCREEN -->
-    <div id="page-profile" class="page-block hidden">
-        <div class="top-bar-overlay" style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position:fixed;">
-            <div class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-            <div style="font-weight: 700; font-size: 1.2rem; margin-top: 10px;">My Profile</div>
-            <div class="refresh-btn"></div>
-        </div>
-        <div class="page-content">
-            <div style="text-align:center; margin-bottom:30px">
-                <div class="profile-img-lg"><i class="fas fa-user"></i></div>
-                <h3 id="prof-disp-name">Rider Name</h3>
-                <p style="color:#777" id="prof-disp-lic">License: ...</p>
-            </div>
-            <label style="font-weight:600; color:#555; margin-left:5px">Full Name</label>
-            <input type="text" id="edit-name" class="form-control" style="text-align:left; background:white; border:1px solid #ddd">
-            <label style="font-weight:600; color:#555; margin-left:5px">Phone Number</label>
-            <input type="text" id="edit-phone" class="form-control" style="text-align:left; background:white; border:1px solid #ddd">
-            <button class="btn btn-primary" onclick="saveProfile()">UPDATE PROFILE</button>
-        </div>
-    </div>
-
-    <!-- 4. DELIVERY SCREEN -->
-    <div id="page-delivery" class="page-block hidden">
-        <div class="top-bar-overlay">
-            <div class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-            <div class="center-pill">
-                <div style="font-weight: 700; font-size: 0.95rem; color: var(--primary);" id="map-name">Rider</div>
-                <div style="font-size: 0.75rem; color: #555;"><span class="online-dot" style="background:orange; box-shadow:0 0 5px orange"></span> Busy</div>
-            </div>
-            <div class="refresh-btn" onclick="refreshMapData()"><i class="fas fa-sync-alt"></i></div>
+    <!-- MAIN APP CONTENT -->
+    <div id="app-content" class="hidden">
+        <!-- TOP BUTTONS (ORANGE) -->
+        <div class="btn-orange-round top-left-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+        <div class="top-right-group">
+            <div class="btn-orange-round" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i></div>
+            <div class="btn-orange-round" onclick="refreshMapData()"><i class="fas fa-location-arrow"></i></div>
         </div>
 
-        <div id="map-view"></div>
-
-        <div class="bottom-sheet" id="bottom-sheet">
-            <div class="sheet-handle-area" onclick="toggleSheet()">
-                <div class="custom-handle" id="sheet-icon"><i class="fas fa-chevron-up" style="color: black;"></i></div>
+        <!-- 1. SCANNING -->
+        <div id="page-scanning">
+            <div id="scanning-screen">
+                <div class="radar-box">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <div class="center-logo"><img src="https://cdn-icons-png.flaticon.com/512/7541/7541900.png" style="width:100%"></div>
+                </div>
+                <h2>Finding Orders...</h2>
+                <p style="opacity:0.7">Wait here for new requests</p>
             </div>
-            <div class="sheet-content">
-                <div class="info-grid">
-                    <div>
-                        <div style="font-size:0.8rem; color:#888;">Customer</div>
-                        <div style="font-weight:700; font-size:1.1rem;" id="cust-name">Name</div>
-                        <div style="font-size:0.9rem; color:#555;" id="cust-addr">Address</div>
+        </div>
+
+        <!-- 2. DELIVERY & SHEET -->
+        <div id="page-delivery" class="hidden">
+            <div id="map-view"></div>
+            
+            <div class="bottom-sheet" id="bottom-sheet">
+                <!-- DRAG HANDLE AREA -->
+                <div class="sheet-drag-area" id="sheet-header">
+                    <div class="sheet-handle"></div>
+                    <div class="sheet-minimized-info">
+                        <span style="color:var(--primary)">ORDER</span>
+                        <span id="mini-order-id">#LOADING</span>
                     </div>
-                    <img src="" id="cust-img" class="cust-avatar">
                 </div>
-                <div class="quick-actions">
-                    <button class="q-btn call" onclick="callCustomer()"><i class="fas fa-phone-alt"></i> Call</button>
-                    <button class="q-btn loc" onclick="openMap()"><i class="fas fa-location-arrow"></i> Map</button>
-                </div>
-                <div style="font-size:0.8rem; font-weight:700; color:#888; margin-bottom:10px;">ORDER ITEMS</div>
-                <div id="item-list"></div>
-                <div class="bill-card">
-                    <div class="bill-row"><span>Subtotal</span><span id="bill-sub">0</span></div>
-                    <div class="bill-row"><span>Rider Earnings</span><span style="color:var(--success); font-weight:bold" id="bill-earn">0</span></div>
-                    <div class="bill-total"><span>Collect Cash</span><span style="color:var(--primary)" id="bill-grand">0</span></div>
-                </div>
-                <div class="slider-wrapper" id="slider-btn">
-                    <div class="slider-text" id="slider-text">SWIPE TO PICKUP</div>
-                    <div class="slider-thumb" id="slider-thumb"><i class="fas fa-arrow-right" style="color:black"></i></div>
+
+                <!-- CONTENT (Hidden when collapsed) -->
+                <div class="sheet-content">
+                    <!-- Customer -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+                        <div style="display:flex; align-items:center; gap:15px">
+                            <img src="" id="cust-img" style="width:60px; height:60px; border-radius:15px; object-fit:cover; background:#eee" onclick="openImgPopup(this.src)">
+                            <div>
+                                <h3 id="cust-name">Customer</h3>
+                                <div style="color:var(--success); font-weight:700">Earnings: ৳<span id="stat-earn">0</span></div>
+                            </div>
+                        </div>
+                        <div style="text-align:right">
+                            <div style="font-size:0.8rem; color:#888">Distance</div>
+                            <div style="font-weight:700; font-size:1.2rem; color:var(--primary)" id="stat-dist">0 km</div>
+                        </div>
+                    </div>
+
+                    <!-- Premium Location Card -->
+                    <div class="loc-card">
+                        <i class="fas fa-map-marker-alt loc-icon"></i>
+                        <div>
+                            <div style="font-size:0.75rem; color:#BF360C; font-weight:700; text-transform:uppercase">Delivery Location</div>
+                            <div style="font-size:1rem; font-weight:600; line-height:1.2" id="cust-addr">Loading...</div>
+                        </div>
+                    </div>
+
+                    <!-- Items -->
+                    <div style="margin-bottom:15px; font-weight:700; color:#888">ITEMS</div>
+                    <div id="item-list"></div>
+
+                    <!-- Actions -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:20px">
+                        <button class="btn-orange-round" style="width:100%; border-radius:15px; font-weight:600; gap:10px" onclick="openMap()">
+                            <i class="fas fa-directions"></i> Navigate
+                        </button>
+                        <div style="text-align:center; font-weight:700; font-size:1.2rem; align-self:center">
+                            Collect: <span style="color:var(--primary)" id="bill-grand">৳0</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-call-premium" onclick="callCustomer()">
+                        <i class="fas fa-phone-alt"></i> CALL CUSTOMER
+                    </button>
+
+                    <!-- Slider -->
+                    <div class="slider-wrapper" id="slider-btn">
+                        <div class="slider-thumb" id="slider-thumb"><i class="fas fa-chevron-right"></i></div>
+                        <div class="slider-text" id="slider-text">SWIPE TO PICKUP</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- INCOMING MODAL -->
+    <!-- ALERT MODAL -->
     <div id="incoming-modal" class="incoming-modal hidden">
         <div class="incoming-card">
-            <div style="width:60px; height:60px; background:rgba(255,87,34,0.1); border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; color:var(--primary); font-size:1.8rem;">
-                <i class="fas fa-bell" style="animation:pulse 1s infinite"></i>
+            <div style="width:70px; height:70px; background:rgba(255,87,34,0.1); border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; color:var(--primary); font-size:2rem;">
+                <i class="fas fa-bell fa-shake"></i>
             </div>
-            <h2>New Order</h2>
-            <p style="color:#666; margin-bottom:15px;" id="alert-addr">Address</p>
-            <h3 style="color:var(--success); margin-bottom:20px;" id="alert-earn">Earn: ৳ 0</h3>
-            <div class="alert-btn-grid">
-                <button class="btn-hold" onclick="holdOrder()">HOLD</button>
-                <button class="btn-accept" onclick="acceptOrder(false)">ACCEPT</button>
+            <h2>New Order!</h2>
+            <p id="alert-addr" style="color:#666; margin-bottom:10px">Address...</p>
+            <h3 style="color:var(--success); margin-bottom:25px" id="alert-earn">৳ 0</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
+                <button class="btn-main" style="background:#FF9800" onclick="holdOrder()">HOLD</button>
+                <button class="btn-main" onclick="acceptOrder(false)">ACCEPT</button>
             </div>
         </div>
     </div>
@@ -331,92 +304,58 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // STATE
-        let riderData = null;
-        let currentOrder = null;
-        let heldOrders = {};
-        let incomingRef = null;
+        // VARS
+        let riderData = null, currentOrder = null, incomingRef = null, heldOrders = {};
         let map, rMarker, cMarker, routeLine;
         let isSheetOpen = false;
         let riderLoc = { lat: 23.8103, lng: 90.4125 };
 
         // UTILS
         window.showToast = (msg) => {
-            const t = document.createElement('div'); t.className = 'toast'; t.innerText = msg;
-            document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
+            const d = document.createElement('div'); 
+            d.style.cssText = "position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#222;color:white;padding:10px 20px;border-radius:30px;z-index:9999;font-weight:600";
+            d.innerText = msg; document.body.appendChild(d); setTimeout(()=>d.remove(),3000);
         }
-        const toggleLoader=s=>document.getElementById('loader').classList.toggle('hidden',!s);
+        const toggleLoader = s => document.getElementById('loader').classList.toggle('hidden',!s);
+        window.openImgPopup = (src) => { document.getElementById('popup-img-src').src = src; document.getElementById('img-popup').classList.add('active'); }
+        window.closeImgPopup = () => { document.getElementById('img-popup').classList.remove('active'); }
 
-        // SPLASH & AUTH
+        // --- AUTH ---
         window.onload = () => {
             setTimeout(() => {
                 document.getElementById('splash-screen').style.opacity = '0';
                 setTimeout(() => document.getElementById('splash-screen').classList.add('hidden'), 500);
             }, 2500);
 
-            const sess = localStorage.getItem('rider_sess_pro');
-            if(sess) {
-                riderData = JSON.parse(sess);
-                startApp();
-            } else {
-                document.getElementById('login-screen').classList.remove('hidden');
-            }
+            if(localStorage.getItem('saved_lic')) document.getElementById('license-input').value = localStorage.getItem('saved_lic');
+            const sess = localStorage.getItem('money_rider_sess');
+            if(sess) { riderData = JSON.parse(sess); startApp(); }
+            else document.getElementById('login-screen').classList.remove('hidden');
         };
 
-        window.checkLicense = async () => {
+        window.verifyLicense = async () => {
             const key = document.getElementById('license-input').value.trim();
             if(!key) return showToast("Enter License");
             toggleLoader(true);
             const s = await get(ref(db, 'riders'));
             let valid = false;
             s.forEach(c => { if(c.val().license === key) { valid = true; riderData = { key: c.key, ...c.val() }; } });
-
             toggleLoader(false);
             if(valid) {
-                if(riderData.status === 'verified') {
-                    localStorage.setItem('rider_sess_pro', JSON.stringify(riderData));
-                    startApp();
-                } else {
-                    const otp = Math.floor(100000 + Math.random() * 900000);
-                    riderData.tempOtp = otp;
-                    await set(ref(db, `rider_requests/${riderData.key}`), { licenseEmail: riderData.license, otp, timestamp: Date.now() });
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('otp-screen').classList.remove('hidden');
-                }
+                if(document.getElementById('remember-me').checked) localStorage.setItem('saved_lic', key);
+                localStorage.setItem('money_rider_sess', JSON.stringify(riderData));
+                startApp();
             } else showToast("Invalid License");
         };
 
-        window.verifyOtp = async () => {
-            if(parseInt(document.getElementById('otp-input').value) === riderData.tempOtp) {
-                await update(ref(db, `riders/${riderData.key}`), { status: 'verified', active: true });
-                await remove(ref(db, `rider_requests/${riderData.key}`));
-                localStorage.setItem('rider_sess_pro', JSON.stringify(riderData));
-                startApp();
-            } else showToast("Wrong OTP");
-        };
+        window.logout = () => { localStorage.removeItem('money_rider_sess'); location.reload(); };
 
-        window.logout = () => { localStorage.removeItem('rider_sess_pro'); location.reload(); };
-
-        // NAVIGATION
-        window.switchPage = (page) => {
-            document.querySelectorAll('.page-block').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`page-${page}`).classList.remove('hidden');
-            toggleSidebar();
-            
-            if(page === 'history') fetchHistory();
-            if(page === 'profile') loadProfileData();
-        };
-
-        // MAIN LOGIC
+        // --- MAIN ---
         function startApp() {
             document.querySelectorAll('.auth-screen').forEach(e => e.classList.add('hidden'));
-            
-            // Set Names
-            document.getElementById('scan-name').innerText = riderData.name;
+            document.getElementById('app-content').classList.remove('hidden');
             document.getElementById('side-name').innerText = riderData.name;
-            if(document.getElementById('map-name')) document.getElementById('map-name').innerText = riderData.name;
-
-            // Geo
+            
             if(navigator.geolocation) {
                 navigator.geolocation.watchPosition(p => {
                     riderLoc = { lat: p.coords.latitude, lng: p.coords.longitude };
@@ -424,26 +363,40 @@
                     if(map) updateMap();
                 }, null, { enableHighAccuracy: true });
             }
-
-            // Init Check (Important to do this FIRST)
-            recoverOrder();
             listenOrders();
+            recoverOrder();
         }
 
-        // LISTEN FOR NEW ORDERS
+        // --- SHEET GESTURES ---
+        const sheet = document.getElementById('bottom-sheet');
+        const header = document.getElementById('sheet-header');
+        let startY = 0;
+
+        header.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; });
+        header.addEventListener('touchmove', (e) => {
+            const currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            if(diff < -50) openSheet(); // Swipe Up
+            if(diff > 50) closeSheet(); // Swipe Down
+        });
+        header.addEventListener('click', () => { if(isSheetOpen) closeSheet(); else openSheet(); });
+
+        function openSheet() { sheet.classList.add('open'); isSheetOpen = true; }
+        function closeSheet() { sheet.classList.remove('open'); isSheetOpen = false; }
+
+        // --- LOGIC ---
         function listenOrders() {
             onValue(ref(db, 'orders'), snap => {
-                if(currentOrder) return; // Ignore if busy
-                
                 let found = false;
                 if(snap.exists()) {
                     snap.forEach(user => {
                         user.forEach(order => {
                             const o = order.val();
-                            // Check: Pending AND Not locally held
                             if(o.status === 'pending' && !heldOrders[order.key]) {
                                 incomingRef = { uid: user.key, oid: order.key, data: o };
-                                showAlert(o);
+                                document.getElementById('incoming-modal').classList.remove('hidden');
+                                document.getElementById('alert-addr').innerText = o.address.area;
+                                document.getElementById('alert-earn').innerText = "৳" + o.totals.deliveryCharge;
                                 found = true;
                             }
                         });
@@ -453,143 +406,83 @@
             });
         }
 
-        function showAlert(o) {
-            document.getElementById('incoming-modal').classList.remove('hidden');
-            let addr = o.address.area === 'DOHS' ? `DOHS Rd ${o.address.road}` : o.address.details;
-            document.getElementById('alert-addr').innerText = addr;
-            document.getElementById('alert-earn').innerText = "Earn: ৳ " + o.totals.deliveryCharge;
-        }
-
-        // HOLD SYSTEM
         window.holdOrder = () => {
             if(!incomingRef) return;
             heldOrders[incomingRef.oid] = incomingRef;
             document.getElementById('incoming-modal').classList.add('hidden');
-            renderHoldList();
-            showToast("Order Held");
-            incomingRef = null; // Clear ref so we can scan for others
+            renderHold();
+            incomingRef = null;
         };
-
-        function renderHoldList() {
-            const list = document.getElementById('hold-list'); list.innerHTML = "";
-            const keys = Object.keys(heldOrders);
-            if(keys.length===0) list.innerHTML = "<div style='text-align:center; color:#ccc'>No held orders</div>";
-            
-            keys.forEach(k => {
-                const item = heldOrders[k];
-                const div = document.createElement('div'); div.className = 'hold-card';
-                div.innerHTML = `<div style="font-weight:bold; font-size:0.9rem">#${item.oid.slice(-5)}</div><div style="font-size:0.8rem">${item.data.address.area}</div><div class="hold-actions"><button class="btn-mini" style="background:#e57373; color:white" onclick="cancelHold('${k}')">Clear</button><button class="btn-mini" style="background:var(--success); color:white" onclick="acceptHold('${k}')">Accept</button></div>`;
-                list.appendChild(div);
+        
+        function renderHold() {
+            const l = document.getElementById('hold-list-container'); l.innerHTML = "";
+            Object.keys(heldOrders).forEach(k => {
+                const i = heldOrders[k];
+                l.innerHTML += `<div style="background:#fff3e0; padding:10px; margin-bottom:5px; border-radius:10px; border:1px solid orange">
+                    <b>#${i.oid.slice(-4)}</b> <br> ${i.data.address.area}
+                    <div style="display:flex; gap:10px; margin-top:5px">
+                        <button onclick="acceptHold('${k}')" style="background:green; color:white; border:none; padding:5px 10px; border-radius:5px">Accept</button>
+                        <button onclick="delete heldOrders['${k}']; renderHold()" style="background:red; color:white; border:none; padding:5px 10px; border-radius:5px">Del</button>
+                    </div>
+                </div>`;
             });
         }
 
-        window.cancelHold = (oid) => { delete heldOrders[oid]; renderHoldList(); };
-        
-        window.acceptHold = (oid) => {
-            const item = heldOrders[oid];
-            if(item) {
-                incomingRef = item;
-                // Important: Don't delete yet. acceptOrder will handle logic
-                toggleSidebar();
-                acceptOrder(true); // True = From Hold
-            }
-        };
+        window.acceptHold = (k) => { incomingRef = heldOrders[k]; acceptOrder(true); };
 
-        // ACCEPT LOGIC
-        window.acceptOrder = async (fromHold = false) => {
+        window.acceptOrder = async (hold) => {
             if(!incomingRef) return;
+            if(currentOrder) return showToast("Finish current order first");
             toggleLoader(true);
             
-            try {
-                const path = `orders/${incomingRef.uid}/${incomingRef.oid}`;
-                // Double check status from DB to prevent race condition
-                const s = await get(child(ref(db), `${path}/status`));
-                
-                if(s.val() === 'pending') {
-                    await update(ref(db, path), {
-                        status: 'accepted',
-                        riderId: riderData.key,
-                        riderName: riderData.name,
-                        riderPhone: riderData.phone
-                    });
-
-                    // Success! Set Current Order
-                    currentOrder = { id: incomingRef.oid, uid: incomingRef.uid, ...incomingRef.data, status: 'accepted' };
-                    
-                    // Cleanup & Switch UI
-                    document.getElementById('incoming-modal').classList.add('hidden');
-                    if(fromHold) {
-                        delete heldOrders[incomingRef.oid];
-                        renderHoldList();
-                    }
-                    
-                    // FORCE UI UPDATE
-                    initDelivery();
-                } else {
-                    showToast("Order taken by another rider!");
-                    document.getElementById('incoming-modal').classList.add('hidden');
-                    if(fromHold) {
-                        delete heldOrders[incomingRef.oid];
-                        renderHoldList();
-                    }
-                }
-            } catch (e) {
-                showToast("Error accepting order");
-                console.error(e);
-            } finally {
-                toggleLoader(false);
+            const path = `orders/${incomingRef.uid}/${incomingRef.oid}`;
+            const s = await get(child(ref(db), `${path}/status`));
+            
+            if(s.val() === 'pending') {
+                await update(ref(db, path), { status: 'accepted', riderId: riderData.key, riderName: riderData.name, riderPhone: riderData.phone||"N/A" });
+                currentOrder = { id: incomingRef.oid, uid: incomingRef.uid, ...incomingRef.data, status: 'accepted' };
+                document.getElementById('incoming-modal').classList.add('hidden');
+                if(hold) { delete heldOrders[incomingRef.oid]; renderHold(); }
+                initDelivery();
+            } else {
+                showToast("Already Taken");
+                document.getElementById('incoming-modal').classList.add('hidden');
             }
+            toggleLoader(false);
         };
 
-        // RECOVER ON REFRESH
         function recoverOrder() {
             onValue(ref(db, 'orders'), snap => {
+                let act = false;
                 if(snap.exists()) {
-                    let foundActive = false;
                     snap.forEach(user => {
                         user.forEach(order => {
                             const o = order.val();
                             if(o.riderId === riderData.key && (o.status === 'accepted' || o.status === 'ontheway')) {
                                 currentOrder = { id: order.key, uid: user.key, ...o };
-                                document.getElementById('incoming-modal').classList.add('hidden');
-                                foundActive = true;
+                                act = true;
                             }
                         });
                     });
-                    
-                    if(foundActive) {
-                        initDelivery(); // Force Delivery Screen
-                    } else {
-                        document.getElementById('page-scanning').classList.remove('hidden'); // Show Scanner
-                        document.getElementById('page-delivery').classList.add('hidden');
-                    }
                 }
-            }, { onlyOnce: true });
+                if(act) { document.getElementById('incoming-modal').classList.add('hidden'); initDelivery(); }
+                else { document.getElementById('page-scanning').classList.remove('hidden'); document.getElementById('page-delivery').classList.add('hidden'); }
+            }, {onlyOnce:true});
         }
 
-        // DELIVERY UI
+        // --- MAP & DELIVERY ---
         function initDelivery() {
-            document.querySelectorAll('.page-block').forEach(el => el.classList.add('hidden'));
+            document.getElementById('page-scanning').classList.add('hidden');
             document.getElementById('page-delivery').classList.remove('hidden');
             
-            // Map Setup - ROBUST INIT
-            if(!map) { 
-                map = L.map('map-view', {zoomControl: false}).setView([riderLoc.lat, riderLoc.lng], 14); 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); 
-            }
+            if(!map) { map = L.map('map-view', {zoomControl:false}).setView([riderLoc.lat, riderLoc.lng], 14); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); }
+            setTimeout(() => { map.invalidateSize(); updateMap(); }, 500);
+
+            onValue(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}/location`), s => { if(s.exists()) { currentOrder.location = s.val(); updateMap(); } });
+
+            // Fill UI
+            document.getElementById('mini-order-id').innerText = "#" + currentOrder.id.slice(-5).toUpperCase();
             
-            // IMPORTANT: Invalidate size after showing to prevent gray map
-            setTimeout(() => {
-                map.invalidateSize();
-                updateMap(); // Call updateMap AFTER map is ready
-            }, 500);
-
-            // Listen for Customer Location
-            onValue(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}/location`), s => {
-                if(s.exists()) { currentOrder.location = s.val(); updateMap(); }
-            });
-
-            // Fetch Info
             get(ref(db, `users/${currentOrder.uid}/profile`)).then(s => {
                 const p = s.val() || {};
                 document.getElementById('cust-name').innerText = p.displayName || "Customer";
@@ -597,122 +490,66 @@
                 currentOrder.custPhone = p.phone || currentOrder.address.contactNumber;
             });
             
-            // Address & Bill
-            let addr = currentOrder.address.area === 'DOHS' ? `DOHS Rd ${currentOrder.address.road}, House ${currentOrder.address.house}` : currentOrder.address.details;
+            const addr = currentOrder.address.area === 'DOHS' ? `DOHS Rd ${currentOrder.address.road}, House ${currentOrder.address.house}` : currentOrder.address.details;
             document.getElementById('cust-addr').innerText = addr;
-            document.getElementById('bill-sub').innerText = "৳ " + currentOrder.totals.subTotal;
-            document.getElementById('bill-earn').innerText = "৳ " + currentOrder.totals.deliveryCharge;
-            document.getElementById('bill-grand').innerText = currentOrder.payment.method === 'cod' ? "৳ " + currentOrder.totals.grandTotal : "Paid Online";
-
-            // Items
-            document.getElementById('item-list').innerHTML = currentOrder.items.map(i => `<div style="display:flex; gap:10px; border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:5px;"><img src="${i.image}" style="width:40px;height:40px;border-radius:5px;"><div style="flex:1;font-size:0.9rem">${i.name}</div><b>x${i.qty}</b></div>`).join('');
+            document.getElementById('stat-earn').innerText = currentOrder.totals.deliveryCharge;
+            document.getElementById('bill-grand').innerText = currentOrder.payment.method==='cod'? "৳ "+currentOrder.totals.grandTotal : "PAID";
             
-            // Slider
+            document.getElementById('item-list').innerHTML = currentOrder.items.map(i => `<div class="item-row"><img src="${i.image}" style="width:40px;height:40px;border-radius:5px"><div>${i.name} <b style="color:var(--primary)">x${i.qty}</b></div></div>`).join('');
+            
             resetSlider(currentOrder.status === 'ontheway');
-
-            // Open Sheet
-            setTimeout(() => { document.getElementById('bottom-sheet').classList.add('open'); isSheetOpen = true; document.getElementById('sheet-icon').innerHTML = '<i class="fas fa-chevron-down" style="color:black"></i>'; }, 600);
+            // Do NOT open sheet automatically, keep it peeked
+            closeSheet();
         }
 
         function updateMap() {
             if(!map) return;
-            const rIcon = L.divIcon({className: 'x', html: `<div class='marker-pin marker-rider marker-pulse'><i class='fas fa-motorcycle'></i></div>`, iconSize: [44,44], iconAnchor: [22,22]});
-            const cIcon = L.divIcon({className: 'x', html: `<div class='marker-pin marker-customer'><i class='fas fa-map-marker-alt'></i></div>`, iconSize: [44,44], iconAnchor: [22,44]});
+            const rIcon = L.divIcon({className:'x', html:`<div style='width:40px;height:40px;background:#FF5722;border:3px solid white;border-radius:50%;display:flex;justify-content:center;align-items:center;color:white;box-shadow:0 5px 15px rgba(0,0,0,0.3)'><i class='fas fa-motorcycle'></i></div>`});
+            const cIcon = L.divIcon({className:'x', html:`<div style='width:40px;height:40px;background:#333;border:3px solid white;border-radius:50%;display:flex;justify-content:center;align-items:center;color:white;box-shadow:0 5px 15px rgba(0,0,0,0.3)'><i class='fas fa-map-marker-alt'></i></div>`});
 
-            // Always Draw Rider
-            if(rMarker) rMarker.setLatLng([riderLoc.lat, riderLoc.lng]); 
-            else rMarker = L.marker([riderLoc.lat, riderLoc.lng], {icon: rIcon}).addTo(map);
-
-            // Check if Customer Location Exists
-            if(currentOrder.location && currentOrder.location.enabled && currentOrder.location.lat) {
+            if(rMarker) rMarker.setLatLng([riderLoc.lat, riderLoc.lng]); else rMarker = L.marker([riderLoc.lat, riderLoc.lng], {icon: rIcon}).addTo(map);
+            
+            if(currentOrder.location && currentOrder.location.enabled) {
                 const cLoc = [currentOrder.location.lat, currentOrder.location.lng];
                 if(cMarker) cMarker.setLatLng(cLoc); else cMarker = L.marker(cLoc, {icon: cIcon}).addTo(map);
-                
                 if(routeLine) map.removeLayer(routeLine);
-                routeLine = L.polyline([[riderLoc.lat, riderLoc.lng], cLoc], {color: '#FF5722', weight: 4, dashArray: '10,10'}).addTo(map);
+                routeLine = L.polyline([[riderLoc.lat, riderLoc.lng], cLoc], {color:'#FF5722', weight:5}).addTo(map);
+                try{map.fitBounds(L.featureGroup([rMarker, cMarker]).getBounds(),{padding:[50,50]})}catch(e){}
                 
-                // Fit bounds only if valid
-                try {
-                    map.fitBounds(L.featureGroup([rMarker, cMarker]).getBounds(), {padding: [50,50]});
-                } catch(e) { console.log(e); }
-            } else {
-                // If no customer location, just center on Rider
-                map.setView([riderLoc.lat, riderLoc.lng], 16);
+                // Dist
+                const R=6371, dLat=(cLoc[0]-riderLoc.lat)*Math.PI/180, dLon=(cLoc[1]-riderLoc.lng)*Math.PI/180;
+                const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(riderLoc.lat*Math.PI/180)*Math.cos(cLoc[0]*Math.PI/180) * Math.sin(dLon/2)*Math.sin(dLon/2);
+                document.getElementById('stat-dist').innerText = (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1) + " km";
             }
         }
 
-        // HISTORY
-        window.fetchHistory = () => {
-            const list = document.getElementById('history-list'); list.innerHTML = '<div style="text-align:center; padding-top:20px;">Loading...</div>';
-            get(ref(db, 'orders')).then(snap => {
-                list.innerHTML = "";
-                if(!snap.exists()) { list.innerHTML="<p style='text-align:center'>No history</p>"; return; }
-                const history = [];
-                snap.forEach(user => { user.forEach(order => { const o = order.val(); if(o.riderId === riderData.key && o.status === 'delivered') history.push(o); }); });
-                history.sort((a,b) => b.completedAt - a.completedAt);
-                history.forEach(h => {
-                    const date = new Date(h.completedAt).toLocaleString();
-                    const items = h.items.map(i => i.name).join(', ');
-                    list.innerHTML += `<div class="history-card"><div class="hist-badge">COMPLETED</div><div class="hist-header"><span>#${h.id.slice(-6).toUpperCase()}</span><span class="hist-price">Earned: ৳${h.totals.deliveryCharge}</span></div><div class="hist-date">${date}</div><div class="hist-addr"><i class="fas fa-map-marker-alt" style="color:red"></i> ${h.address.area}</div><div style="font-size:0.8rem; color:#666; margin-top:5px;">Items: ${items}</div><div class="hist-cust"><div><b>Customer:</b> ${h.address.contactNumber}</div></div></div>`;
-                });
-            });
-        };
-
-        // PROFILE
-        window.loadProfileData = () => {
-            document.getElementById('prof-disp-name').innerText = riderData.name;
-            document.getElementById('prof-disp-lic').innerText = "License: " + riderData.license;
-            document.getElementById('edit-name').value = riderData.name;
-            document.getElementById('edit-phone').value = riderData.phone || "";
-        };
-        window.saveProfile = async () => {
-            const n = document.getElementById('edit-name').value;
-            const p = document.getElementById('edit-phone').value;
-            if(!n) return showToast("Name required");
-            await update(ref(db, `riders/${riderData.key}`), { name: n, phone: p });
-            riderData.name = n; riderData.phone = p;
-            localStorage.setItem('rider_sess_pro', JSON.stringify(riderData));
-            showToast("Profile Updated");
-            loadProfileData();
-        };
-
-        // UI ACTIONS
-        window.toggleSidebar = () => { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open'); };
-        window.toggleSheet = () => { const s = document.getElementById('bottom-sheet'); const i = document.getElementById('sheet-icon'); isSheetOpen = !isSheetOpen; if(isSheetOpen) { s.classList.add('open'); i.innerHTML = '<i class="fas fa-chevron-down" style="color:black"></i>'; } else { s.classList.remove('open'); i.innerHTML = '<i class="fas fa-chevron-up" style="color:black"></i>'; } };
-        window.refreshMapData = () => { if(map) { map.invalidateSize(); updateMap(); showToast("Map Refreshed"); } };
-        window.callCustomer = () => { if(currentOrder.custPhone) window.open(`tel:${currentOrder.custPhone}`); else showToast("No number"); };
-        window.openMap = () => { if(currentOrder.location?.enabled) window.open(`https://www.google.com/maps/dir/?api=1&destination=${currentOrder.location.lat},${currentOrder.location.lng}`); else showToast("No location"); };
-
-        // SLIDER & STATUS
-        function resetSlider(isDrop) {
-            const thumb = document.getElementById('slider-thumb');
-            const txt = document.getElementById('slider-text');
-            thumb.style.transform = 'translateX(0)';
-            document.querySelector('.slider-wrapper').classList.remove('finish');
-            if(isDrop) { txt.innerText = "SWIPE TO COMPLETE"; document.querySelector('.slider-wrapper').classList.add('finish'); thumb.style.background = "#00C853"; } 
-            else { txt.innerText = "SWIPE TO PICKUP"; thumb.style.background = "#FF5722"; }
-            initSlider(isDrop);
-        }
-        function initSlider(isDrop) {
-            const thumb = document.getElementById('slider-thumb'); const cont = document.getElementById('slider-btn');
+        // --- SLIDER ---
+        function resetSlider(drop) {
+            const t = document.getElementById('slider-thumb'), x = document.getElementById('slider-text');
+            t.style.transform = 'translateX(0)';
+            if(drop) { x.innerText = "SWIPE TO COMPLETE"; t.style.background = "#00C853"; } 
+            else { x.innerText = "SWIPE TO PICKUP"; t.style.background = "#FF5722"; }
+            
             let startX, max;
-            const start = e => { startX = e.touches?e.touches[0].clientX:e.clientX; max = cont.offsetWidth - 54 - 6; document.addEventListener('touchmove', move); document.addEventListener('touchend', end); document.addEventListener('mousemove', move); document.addEventListener('mouseup', end); };
-            const move = e => { let cx = e.touches?e.touches[0].clientX:e.clientX; let dx = cx - startX; if(dx<0) dx=0; if(dx>max) dx=max; thumb.style.transform = `translateX(${dx}px)`; document.getElementById('slider-text').style.opacity = 1 - (dx/max); };
-            const end = async () => {
-                let mat = new WebKitCSSMatrix(window.getComputedStyle(thumb).transform);
-                if(mat.m41 > max - 10) { thumb.style.transform = `translateX(${max}px)`; if(isDrop) await updateStatus('delivered'); else await updateStatus('ontheway'); } 
-                else { thumb.style.transform = 'translateX(0)'; document.getElementById('slider-text').style.opacity = 1; }
-                document.removeEventListener('touchmove', move); document.removeEventListener('touchend', end); document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', end);
+            const start=e=>{ startX = e.touches?e.touches[0].clientX:e.clientX; max=document.getElementById('slider-btn').offsetWidth-60; document.addEventListener('touchmove',move); document.addEventListener('touchend',end); };
+            const move=e=>{ let dx=(e.touches?e.touches[0].clientX:e.clientX)-startX; if(dx<0)dx=0; if(dx>max)dx=max; t.style.transform=`translateX(${dx}px)`; };
+            const end=async()=>{ 
+                let cur = parseFloat(t.style.transform.replace(/[^\d.]/g,''))||0;
+                if(cur>max-20) { 
+                    t.style.transform=`translateX(${max}px)`; 
+                    if(drop) { await update(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}`), {status:'delivered', completedAt:Date.now()}); showToast("Delivered!"); currentOrder=null; if(map){map.removeLayer(cMarker);map.removeLayer(routeLine);cMarker=null;} document.getElementById('page-scanning').classList.remove('hidden'); document.getElementById('page-delivery').classList.add('hidden'); }
+                    else { await update(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}`), {status:'ontheway'}); showToast("Picked Up!"); resetSlider(true); }
+                } else t.style.transform='translateX(0)';
+                document.removeEventListener('touchmove',move); document.removeEventListener('touchend',end); 
             };
-            thumb.onmousedown = start; thumb.ontouchstart = start;
+            t.addEventListener('touchstart', start); t.addEventListener('mousedown', start);
         }
-        async function updateStatus(st) {
-            let d = { status: st }; if(st==='delivered') d.completedAt = Date.now();
-            await update(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}`), d);
-            currentOrder.status = st;
-            if(st==='ontheway') { showToast("Picked Up!"); resetSlider(true); } 
-            else { showToast("Done!"); currentOrder = null; if(map) { map.removeLayer(cMarker); map.removeLayer(routeLine); cMarker=null; routeLine=null; } switchPage('scanning'); }
-        }
+
+        // ACTIONS
+        window.toggleSidebar = () => { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open'); };
+        window.refreshMapData = () => { if(map) { map.invalidateSize(); updateMap(); showToast("Refreshed"); } };
+        window.callCustomer = () => { if(currentOrder.custPhone) window.open(`tel:${currentOrder.custPhone}`); else showToast("No Phone"); };
+        window.openMap = () => { if(currentOrder.location) window.open(`https://www.google.com/maps/dir/?api=1&destination=${currentOrder.location.lat},${currentOrder.location.lng}`); else showToast("No Loc"); };
     </script>
 </body>
 </html>
