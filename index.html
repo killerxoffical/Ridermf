@@ -3,298 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Money Rider - Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Money Rider - Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         :root {
             --primary: #FF5722; 
-            --primary-grad: linear-gradient(135deg, #FF5722, #FF8A65);
-            --dark: #121212;
-            --surface: #ffffff;
-            --bg: #F2F4F8;
-            --success: #00C853;
-            --shadow-soft: 0 10px 40px rgba(255, 87, 34, 0.15);
-            --shadow-hard: 0 10px 30px rgba(255, 87, 34, 0.4);
+            --primary-light: #FFCCBC;
+            --bg: #F8F9FD;
+            --line-color: #E0E0E0;
+            --green-bg: #E8F5E9;
+            --shadow-hard: 0 4px 15px rgba(255, 87, 34, 0.4);
+            --anim-curve: cubic-bezier(0.4, 0, 0.2, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #333; height: 100vh; overflow: hidden; position: relative; }
         .hidden { display: none !important; }
 
-        /* --- SPLASH SCREEN --- */
-        #splash-screen {
-            position: fixed; inset: 0; background: var(--primary); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: white; transition: opacity 0.5s ease;
-        }
-        .splash-icon { 
-            font-size: 60px; color: var(--primary); background: white; 
-            width: 120px; height: 120px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 50px rgba(0,0,0,0.2);
-            animation: drive 1.5s infinite ease-in-out;
-        }
-        @keyframes drive { 
-            0% { transform: translateX(-10px) rotate(-5deg); }
-            50% { transform: translateX(10px) rotate(5deg); }
-            100% { transform: translateX(-10px) rotate(-5deg); }
-        }
-        .splash-text { margin-top: 25px; font-size: 2rem; font-weight: 800; letter-spacing: 1px; }
-
-        /* --- BUTTONS (ORANGE THEME) --- */
+        /* --- BUTTONS --- */
         .btn-orange-round {
-            width: 45px; height: 45px; border-radius: 12px;
+            width: 45px; height: 45px; border-radius: 50%;
             background: var(--primary); color: white;
             display: flex; align-items: center; justify-content: center;
             box-shadow: var(--shadow-hard); cursor: pointer;
-            border: 2px solid white; transition: 0.2s;
+            border: 2px solid white; transition: transform 0.2s;
         }
         .btn-orange-round:active { transform: scale(0.9); }
-        
-        .top-left-btn { position: absolute; top: 20px; left: 20px; z-index: 1000; }
-        .top-right-group { position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 15px; }
+        .top-left-btn { position: absolute; top: 20px; left: 20px; z-index: 1200; }
+        .top-right-group { position: absolute; top: 20px; right: 20px; z-index: 1200; display: flex; flex-direction: column; gap: 15px; }
 
-        /* --- AUTH SCREEN --- */
+        /* --- AUTH --- */
         .auth-screen { position: fixed; inset: 0; background: white; z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; }
-        .form-control { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid #eee; margin-bottom: 20px; font-size: 1.1rem; text-align: center; background: #f8f9fa; font-weight: 600; outline: none; }
-        .form-control:focus { border-color: var(--primary); background: white; }
-        .btn-main { padding: 16px; width: 100%; border: none; border-radius: 15px; font-weight: 700; font-size: 1.1rem; cursor: pointer; background: var(--primary); color: white; box-shadow: var(--shadow-hard); }
+        .form-control { width: 100%; padding: 18px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px; font-size: 1.1rem; text-align: center; background: #f8f9fa; font-weight: 600; outline: none; }
+        .btn-main { padding: 16px; width: 100%; border: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(255, 87, 34, 0.3); }
+
+        /* --- HISTORY PAGE --- */
+        #page-history { position: fixed; inset: 0; background: #fff; z-index: 2500; display: flex; flex-direction: column; }
+        .hist-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 15px; background: white; }
+        .hist-list { flex: 1; overflow-y: auto; padding: 10px; background: #F8F9FD; }
+        .history-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
 
         /* --- SIDEBAR --- */
-        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2100; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(3px); }
-        .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: white; z-index: 2200; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; display: flex; flex-direction: column; border-radius: 0 20px 20px 0; }
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2100; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(2px); }
+        .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: white; z-index: 2200; transform: translateX(-100%); transition: 0.3s var(--anim-curve); display: flex; flex-direction: column; border-radius: 0 20px 20px 0; }
         .sidebar.open { transform: translateX(0); }
         .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
-        
-        /* --- SCANNING RADAR --- */
-        #scanning-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #1a1a1a; color: white; }
-        .radar-box { position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; margin-bottom: 40px; }
-        .pulse-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--primary); opacity: 0; animation: ripple 2s infinite; }
-        .pulse-ring:nth-child(2) { animation-delay: 0.5s; }
-        .pulse-ring:nth-child(3) { animation-delay: 1s; }
-        .center-logo { width: 70px; height: 70px; background: white; border-radius: 50%; padding: 10px; z-index: 5; box-shadow: 0 0 30px var(--primary); }
-        @keyframes ripple { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
 
-        /* --- DELIVERY SCREEN --- */
-        #map-view { width: 100%; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        /* --- MAP & SHEET --- */
+        #map-view { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* BOTTOM SHEET (The Magic Part) */
         .bottom-sheet {
             position: absolute; bottom: 0; left: 0; width: 100%;
-            background: white; border-radius: 30px 30px 0 0;
-            box-shadow: 0 -10px 50px rgba(0,0,0,0.2); z-index: 1100;
-            /* Initially only show header (approx 80px) */
-            transform: translateY(calc(100% - 85px)); 
-            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 1100; pointer-events: none;
+            transform: translateY(calc(100% - 95px)); 
+            transition: transform 0.3s var(--anim-curve);
             display: flex; flex-direction: column; max-height: 85vh;
         }
-        .bottom-sheet.open { transform: translateY(0); }
+        .bottom-sheet.open { transform: translateY(0); pointer-events: auto; }
         
-        .sheet-drag-area { width: 100%; padding: 15px 0 10px; display: flex; flex-direction: column; align-items: center; cursor: grab; background: white; border-radius: 30px 30px 0 0; }
-        .sheet-handle { width: 60px; height: 6px; background: #e0e0e0; border-radius: 10px; margin-bottom: 10px; position: relative; overflow: hidden; }
-        /* Animated Handle */
-        .sheet-handle::after { content:''; position: absolute; top:0; left:0; width:100%; height:100%; background: var(--primary); transform: translateX(-100%); animation: loadLine 2s infinite; }
-        @keyframes loadLine { 100% { transform: translateX(100%); } }
-
-        .sheet-minimized-info { font-size: 1.2rem; font-weight: 800; color: #333; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
-        
-        .sheet-content { padding: 10px 25px 30px; overflow-y: auto; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
-        .bottom-sheet.open .sheet-content { opacity: 1; pointer-events: auto; }
-
-        /* Premium Location Card */
-        .loc-card { background: #FFF3E0; border: 1px solid #FFCCBC; padding: 15px; border-radius: 15px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; position: relative; overflow: hidden; }
-        .loc-card::before { content:''; position: absolute; width: 5px; height: 100%; background: var(--primary); left: 0; top: 0; }
-        .loc-icon { font-size: 1.5rem; color: var(--primary); }
-
-        /* Premium Call Button */
-        .btn-call-premium {
-            background: var(--primary-grad); color: white;
-            padding: 15px; border-radius: 15px; border: none;
-            width: 100%; font-weight: 700; font-size: 1.1rem;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            box-shadow: var(--shadow-hard); cursor: pointer; margin-top: 10px;
+        /* HEADER */
+        .sheet-drag-area { 
+            padding: 15px 0; display: flex; flex-direction: column; align-items: center; 
+            cursor: grab; background: white; 
+            border-radius: 25px 25px 0 0; 
+            border: 2px solid var(--primary);
+            border-bottom: 1px solid #f0f0f0;
+            pointer-events: auto;
+            position: relative; z-index: 1101;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
         }
+        .sheet-handle { width: 50px; height: 5px; background: #ddd; border-radius: 10px; margin-bottom: 10px; }
         
-        /* Slider with Orange Shadow */
-        .slider-wrapper { margin-top: 20px; position: relative; height: 65px; background: #fff; border: 2px solid #eee; border-radius: 35px; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
-        .slider-thumb { width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; position: absolute; left: 3px; z-index: 2; box-shadow: 10px 0 20px rgba(255, 87, 34, 0.6); cursor: grab; }
-        .slider-text { width: 100%; text-align: center; font-weight: 700; color: #aaa; z-index: 1; font-size: 0.9rem; letter-spacing: 2px; }
+        /* CONTENT (Overflow hidden for slide effect) */
+        .sheet-content { 
+            overflow: hidden; position: relative; 
+            background: white; min-height: 350px;
+            pointer-events: auto;
+        }
 
-        /* Image Popup */
+        /* --- SLIDING VIEWS CONTAINER --- */
+        .views-container {
+            display: flex;
+            width: 200%; /* Holds two views side by side */
+            transition: transform 0.4s var(--anim-curve);
+        }
+        .view-section {
+            width: 50%;
+            padding: 0 25px 30px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        /* --- TIMELINE UI --- */
+        .timeline-container { position: relative; padding-left: 35px; margin-top: 25px; }
+        .timeline-line { position: absolute; left: 14px; top: 10px; bottom: 10px; width: 2px; background: var(--line-color); z-index: 0; }
+        .timeline-block { position: relative; margin-bottom: 30px; z-index: 1; }
+        
+        /* Icons */
+        .t-icon-box { 
+            position: absolute; left: -35px; top: 0; 
+            width: 30px; height: 30px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; background: white; z-index: 2;
+            border: 2px solid var(--primary); color: var(--primary);
+            box-shadow: 0 2px 8px rgba(255, 87, 34, 0.15);
+        }
+        .icon-end { background: var(--primary); color: white; border: none; font-size: 15px; }
+
+        /* Profile & Details */
+        .cust-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .cust-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #eee; border: 2px solid var(--primary); cursor: zoom-in; }
+        .t-title { font-size: 1.1rem; font-weight: 700; color: #222; }
+        .t-sub { font-size: 0.9rem; color: #666; line-height: 1.4; margin-bottom: 15px; }
+        .t-amount { font-size: 2.2rem; font-weight: 800; color: #111; margin-top: 5px; letter-spacing: -0.5px; }
+
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-act { padding: 12px; border-radius: 10px; background: white; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; color: #333; border: 1px solid var(--primary); }
+
+        /* VIEW ALL ITEMS BTN */
+        .item-view-btn {
+            background: #fff3e0; color: var(--primary);
+            border: 1px solid var(--primary); padding: 14px;
+            width: 100%; border-radius: 12px; font-weight: 700;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; margin-bottom: 20px; margin-top: 10px;
+            position: relative; z-index: 2;
+        }
+
+        /* ITEM BOX */
+        .item-box-final { 
+            background: var(--green-bg); 
+            border: 1px solid var(--primary); 
+            border-radius: 15px; padding: 15px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        .item-left { display: flex; align-items: center; gap: 15px; }
+        .item-img { width: 50px; height: 50px; border-radius: 10px; background: white; object-fit: cover; }
+        .item-qty-text { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
+
+        /* SLIDER */
+        .slider-wrapper { 
+            position: relative; height: 60px; margin-top: 10px;
+            background: #263238; border-radius: 30px; overflow: hidden; 
+            display: flex; align-items: center; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .slider-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0; background: var(--primary); z-index: 1; transition: width 0.05s linear; border-radius: 30px; }
+        .slider-thumb { 
+            width: 52px; height: 52px; border-radius: 50%; 
+            background: var(--primary); color: white; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.2rem; position: absolute; left: 4px; z-index: 3; 
+            cursor: grab; box-shadow: 0 0 10px rgba(0,0,0,0.3); border: 2px solid white;
+        }
+        .slider-text { 
+            width: 100%; text-align: center; font-weight: 700; 
+            color: #78909C; z-index: 2; font-size: 0.9rem; letter-spacing: 1px; 
+            position: relative; pointer-events: none;
+        }
+
+        /* --- MODALS --- */
         .img-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
         .img-modal.active { opacity: 1; pointer-events: auto; }
-        .img-modal img { max-width: 90%; max-height: 80%; border-radius: 20px; border: 4px solid var(--primary); box-shadow: 0 0 50px rgba(255, 87, 34, 0.5); transform: scale(0.8); transition: 0.3s; }
+        .img-modal img { max-width: 90%; max-height: 80%; border-radius: 20px; border: 4px solid var(--primary); transform: scale(0.8); transition: 0.3s; }
         .img-modal.active img { transform: scale(1); }
 
-        /* Loader */
-        .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 9000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .spinner { width: 60px; height: 60px; border: 6px solid #eee; border-top: 6px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* INCOMING */
-        .incoming-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; }
+        .incoming-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 4000; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; }
         .incoming-card { background: white; border-radius: 25px; padding: 30px 20px; text-align: center; animation: slideUp 0.3s; }
         @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)}}
 
-        /* Items */
-        .item-row { display: flex; align-items: center; gap: 15px; padding: 10px; border: 1px solid #FFCCBC; background: #fffbfb; border-radius: 12px; margin-bottom: 8px; }
+        #scanning-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; }
+        .scan-anim { width: 120px; height: 120px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 20px; color: var(--primary); font-size: 30px; }
+        .scan-anim::after { content:''; position: absolute; width: 100%; height: 100%; border: 2px solid var(--primary); border-radius: 50%; animation: ripple 1.5s infinite; opacity: 0; }
+        @keyframes ripple { 0% {transform: scale(0.8); opacity:1} 100% {transform: scale(1.6); opacity:0}}
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
-    <div id="loader" class="loader-overlay hidden"><div class="spinner"></div></div>
+    <div id="img-popup" class="img-modal" onclick="closeImgPopup()"><img id="popup-img-src" src=""></div>
 
-    <!-- IMAGE POPUP -->
-    <div id="img-popup" class="img-modal" onclick="closeImgPopup()">
-        <img id="popup-img-src" src="">
-    </div>
-
-    <!-- SPLASH SCREEN -->
-    <div id="splash-screen">
-        <div class="splash-icon"><i class="fas fa-motorcycle"></i></div>
-        <div class="splash-text">Money Rider</div>
-    </div>
-
-    <!-- LOGIN -->
-    <div id="login-screen" class="auth-screen hidden">
-        <img src="https://cdn-icons-png.flaticon.com/512/7541/7541900.png" style="width:80px; margin-bottom:20px">
-        <h2 style="margin-bottom:10px">Rider Login</h2>
-        <p style="color:#777; margin-bottom:30px">Deliver & Earn Money</p>
-        <input type="text" id="license-input" class="form-control" placeholder="ENTER LICENSE">
-        <div style="display:flex; gap:10px; margin-bottom:20px; align-self:flex-start; margin-left:10px">
-            <input type="checkbox" id="remember-me"> <label for="remember-me">Remember License</label>
+    <!-- SEPARATE HISTORY PAGE -->
+    <div id="page-history" class="hidden">
+        <div class="hist-header">
+            <div class="btn-orange-round" onclick="closeHistory()"><i class="fas fa-arrow-left"></i></div>
+            <h2>Order History</h2>
         </div>
-        <button class="btn-main" onclick="verifyLicense()">START DRIVING</button>
+        <div id="history-list-content" class="hist-list"></div>
+    </div>
+
+    <!-- AUTH -->
+    <div id="login-screen" class="auth-screen hidden">
+        <h2 style="margin-bottom:10px; font-size:1.8rem">Rider App</h2>
+        <input type="text" id="license-input" class="form-control" placeholder="LICENSE KEY">
+        <button class="btn-main" onclick="verifyLicense()">Start Driving</button>
     </div>
 
     <!-- SIDEBAR -->
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="sidebar">
-        <div style="margin-bottom:30px; display:flex; align-items:center; gap:15px">
-            <div style="width:60px; height:60px; background:#f0f0f0; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-size:1.5rem"><i class="fas fa-user-astronaut"></i></div>
+        <div style="padding: 30px 20px; background:#f5f5f5; display:flex; gap:15px; align-items:center">
+            <div style="width:50px; height:50px; background:#ddd; border-radius:50%; display:flex; align-items:center; justify-content:center"><i class="fas fa-user"></i></div>
             <div>
                 <h3 id="side-name">Rider</h3>
-                <span style="color:var(--success); font-weight:600">● Active</span>
+                <small style="color:var(--primary); font-weight:700">● Online</small>
             </div>
         </div>
-        <div style="font-weight:700; color:#aaa; margin-bottom:15px; font-size:0.8rem">HELD ORDERS</div>
-        <div id="hold-list-container" style="flex:1; overflow-y:auto; padding-right:5px"></div>
-        <button class="btn-main" style="background:#333; margin-top:20px" onclick="logout()">LOGOUT</button>
+        <div style="padding:20px">
+            <button class="btn-main" style="background:white; color:#333; border:1px solid #eee; margin-bottom:10px" onclick="openHistory()">
+                <i class="fas fa-history" style="color:var(--primary)"></i> Order History
+            </button>
+            <button class="btn-main" style="background:#333" onclick="logout()">Logout</button>
+        </div>
     </div>
 
-    <!-- MAIN APP CONTENT -->
+    <!-- MAIN APP -->
     <div id="app-content" class="hidden">
-        <!-- TOP BUTTONS (ORANGE) -->
         <div class="btn-orange-round top-left-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
         <div class="top-right-group">
             <div class="btn-orange-round" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i></div>
-            <div class="btn-orange-round" onclick="refreshMapData()"><i class="fas fa-location-arrow"></i></div>
+            <div class="btn-orange-round" onclick="recenterMap()"><i class="fas fa-location-arrow"></i></div>
         </div>
 
-        <!-- 1. SCANNING -->
+        <!-- SCANNING -->
         <div id="page-scanning">
             <div id="scanning-screen">
-                <div class="radar-box">
-                    <div class="pulse-ring"></div>
-                    <div class="pulse-ring"></div>
-                    <div class="center-logo"><img src="https://cdn-icons-png.flaticon.com/512/7541/7541900.png" style="width:100%"></div>
-                </div>
-                <h2>Finding Orders...</h2>
-                <p style="opacity:0.7">Wait here for new requests</p>
+                <div class="scan-anim"><i class="fas fa-search"></i></div>
+                <h2>Searching Orders...</h2>
             </div>
         </div>
 
-        <!-- 2. DELIVERY & SHEET -->
+        <!-- DELIVERY -->
         <div id="page-delivery" class="hidden">
             <div id="map-view"></div>
             
             <div class="bottom-sheet" id="bottom-sheet">
-                <!-- DRAG HANDLE AREA -->
+                <!-- HEADER -->
                 <div class="sheet-drag-area" id="sheet-header">
                     <div class="sheet-handle"></div>
-                    <div class="sheet-minimized-info">
-                        <span style="color:var(--primary)">ORDER</span>
-                        <span id="mini-order-id">#LOADING</span>
+                    <div style="display:flex; justify-content:space-between; width:100%; padding:0 25px; align-items:center">
+                        <div>
+                            <div style="font-size:0.75rem; color:#888; font-weight:700; letter-spacing:1px">CURRENT ORDER</div>
+                            <div style="font-weight:800; font-size:1.4rem">#<span id="mini-id">...</span></div>
+                        </div>
+                        <div style="text-align:right">
+                            <div style="font-size:0.75rem; color:#888; font-weight:600">LIVE TRACKING</div>
+                            <div style="font-weight:700; color:var(--primary); font-size:1.1rem">
+                                <span id="mini-eta">-- min</span> • <span id="mini-dist">-- km</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- CONTENT (Hidden when collapsed) -->
-                <div class="sheet-content">
-                    <!-- Customer -->
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-                        <div style="display:flex; align-items:center; gap:15px">
-                            <img src="" id="cust-img" style="width:60px; height:60px; border-radius:15px; object-fit:cover; background:#eee" onclick="openImgPopup(this.src)">
-                            <div>
-                                <h3 id="cust-name">Customer</h3>
-                                <div style="color:var(--success); font-weight:700">Earnings: ৳<span id="stat-earn">0</span></div>
+                <!-- CONTENT (Swipeable Container) -->
+                <div class="sheet-content" id="sheet-content-area">
+                    
+                    <div class="views-container" id="views-slider">
+                        <!-- VIEW 1: MAIN INFO -->
+                        <div class="view-section">
+                            <div class="timeline-container">
+                                <div class="timeline-line"></div>
+                                
+                                <!-- Customer -->
+                                <div class="timeline-block">
+                                    <div class="t-icon-box"><i class="fas fa-user"></i></div>
+                                    <div style="margin-bottom:10px">
+                                        <div class="cust-header">
+                                            <img src="" id="cust-img" class="cust-img" onclick="openImgPopup(this.src)">
+                                            <div>
+                                                <div class="t-title" id="cust-name">Customer</div>
+                                                <div style="font-size:0.85rem; color:#666">Dhaka, Bangladesh</div>
+                                            </div>
+                                        </div>
+                                        <div class="t-sub" id="cust-addr">Address details...</div>
+                                        <div class="action-grid">
+                                            <button class="btn-act" onclick="callCustomer()"><i class="fas fa-phone-alt" style="color:var(--primary)"></i> Call</button>
+                                            <button class="btn-act" onclick="openMap()"><i class="fas fa-directions" style="color:var(--primary)"></i> Route</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Payment (Wallet) -->
+                                <div class="timeline-block">
+                                    <div class="t-icon-box"><i class="fas fa-wallet"></i></div>
+                                    <div class="t-title">Total payment</div>
+                                    <div class="t-sub">Collect cash from customer</div>
+                                    <div class="t-amount" id="bill-grand">Tk 0</div>
+                                </div>
+
+                                <!-- Finish Checkmark (Updated: No Icon beside Total Payment) -->
+                                <div class="timeline-block" style="margin-bottom:0">
+                                    <div class="t-icon-box icon-end"><i class="fas fa-check"></i></div>
+                                </div>
+                            </div>
+
+                            <!-- BUTTON TO SWAP VIEW -->
+                            <div class="item-view-btn" onclick="swapView('items')">
+                                <div style="display:flex; align-items:center; gap:10px">
+                                    <div style="background:var(--primary); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px"><i class="fas fa-check"></i></div>
+                                    <span>VIEW ALL ITEMS</span>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+
+                            <!-- SLIDER -->
+                            <div class="slider-wrapper" id="slider-btn">
+                                <div class="slider-fill" id="slider-fill"></div>
+                                <div class="slider-thumb" id="slider-thumb"><i class="fas fa-chevron-right"></i></div>
+                                <div class="slider-text" id="slider-text">SWIPE TO PICK UP</div>
                             </div>
                         </div>
-                        <div style="text-align:right">
-                            <div style="font-size:0.8rem; color:#888">Distance</div>
-                            <div style="font-weight:700; font-size:1.2rem; color:var(--primary)" id="stat-dist">0 km</div>
+
+                        <!-- VIEW 2: ITEMS LIST -->
+                        <div class="view-section">
+                            <!-- Back Button Positioned same level as profile -->
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; cursor:pointer; padding-top:25px;" onclick="swapView('main')">
+                                <div class="btn-orange-round" style="width:35px; height:35px; font-size:14px"><i class="fas fa-arrow-left"></i></div>
+                                <h3 style="margin:0">Back to Details</h3>
+                            </div>
+                            <h4 style="color:#777; margin-bottom:15px">PACKAGE ITEMS</h4>
+                            <div id="items-list-content"></div>
                         </div>
                     </div>
 
-                    <!-- Premium Location Card -->
-                    <div class="loc-card">
-                        <i class="fas fa-map-marker-alt loc-icon"></i>
-                        <div>
-                            <div style="font-size:0.75rem; color:#BF360C; font-weight:700; text-transform:uppercase">Delivery Location</div>
-                            <div style="font-size:1rem; font-weight:600; line-height:1.2" id="cust-addr">Loading...</div>
-                        </div>
-                    </div>
-
-                    <!-- Items -->
-                    <div style="margin-bottom:15px; font-weight:700; color:#888">ITEMS</div>
-                    <div id="item-list"></div>
-
-                    <!-- Actions -->
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:20px">
-                        <button class="btn-orange-round" style="width:100%; border-radius:15px; font-weight:600; gap:10px" onclick="openMap()">
-                            <i class="fas fa-directions"></i> Navigate
-                        </button>
-                        <div style="text-align:center; font-weight:700; font-size:1.2rem; align-self:center">
-                            Collect: <span style="color:var(--primary)" id="bill-grand">৳0</span>
-                        </div>
-                    </div>
-
-                    <button class="btn-call-premium" onclick="callCustomer()">
-                        <i class="fas fa-phone-alt"></i> CALL CUSTOMER
-                    </button>
-
-                    <!-- Slider -->
-                    <div class="slider-wrapper" id="slider-btn">
-                        <div class="slider-thumb" id="slider-thumb"><i class="fas fa-chevron-right"></i></div>
-                        <div class="slider-text" id="slider-text">SWIPE TO PICKUP</div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ALERT MODAL -->
+    <!-- INCOMING -->
     <div id="incoming-modal" class="incoming-modal hidden">
         <div class="incoming-card">
-            <div style="width:70px; height:70px; background:rgba(255,87,34,0.1); border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; color:var(--primary); font-size:2rem;">
-                <i class="fas fa-bell fa-shake"></i>
-            </div>
-            <h2>New Order!</h2>
-            <p id="alert-addr" style="color:#666; margin-bottom:10px">Address...</p>
-            <h3 style="color:var(--success); margin-bottom:25px" id="alert-earn">৳ 0</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
-                <button class="btn-main" style="background:#FF9800" onclick="holdOrder()">HOLD</button>
-                <button class="btn-main" onclick="acceptOrder(false)">ACCEPT</button>
-            </div>
+            <div style="width:60px; height:60px; background:#fff3e0; border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; color:var(--primary); font-size:1.5rem"><i class="fas fa-bell fa-shake"></i></div>
+            <h2 style="font-size:1.4rem">New Delivery</h2>
+            <p id="alert-addr" style="color:#666; margin:10px 0 20px">Address...</p>
+            <div style="font-weight:700; font-size:1.2rem; color:#00C853; margin-bottom:25px">Earn: <span id="alert-earn">৳0</span></div>
+            <button class="btn-main" onclick="acceptOrder()">ACCEPT</button>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, update, get, child, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { getDatabase, ref, onValue, update, get, child } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC-QeK211wkCYaO8hjJS89P0lldCTHMp38", authDomain: "topup-52074.firebaseapp.com",
@@ -303,152 +357,149 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const $ = id => document.getElementById(id);
 
-        // VARS
-        let riderData = null, currentOrder = null, incomingRef = null, heldOrders = {};
+        let riderData = null, currentOrder = null, incomingRef = null;
         let map, rMarker, cMarker, routeLine;
         let isSheetOpen = false;
         let riderLoc = { lat: 23.8103, lng: 90.4125 };
 
         // UTILS
-        window.showToast = (msg) => {
-            const d = document.createElement('div'); 
-            d.style.cssText = "position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#222;color:white;padding:10px 20px;border-radius:30px;z-index:9999;font-weight:600";
-            d.innerText = msg; document.body.appendChild(d); setTimeout(()=>d.remove(),3000);
+        window.openImgPopup = (src) => { $('popup-img-src').src = src; $('img-popup').classList.add('active'); };
+        window.closeImgPopup = () => { $('img-popup').classList.remove('active'); };
+        
+        // VIEW SWAPPER (SLIDER LOGIC)
+        window.swapView = (view) => {
+            const slider = $('views-slider');
+            if(view === 'items') {
+                slider.style.transform = 'translateX(-50%)';
+            } else {
+                slider.style.transform = 'translateX(0%)';
+            }
+        };
+
+        // SWIPE LOGIC
+        const contentArea = $('sheet-content-area');
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        contentArea.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+        contentArea.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) swapView('items'); // Swipe Left
+            if (touchEndX > touchStartX + 50) swapView('main'); // Swipe Right
         }
-        const toggleLoader = s => document.getElementById('loader').classList.toggle('hidden',!s);
-        window.openImgPopup = (src) => { document.getElementById('popup-img-src').src = src; document.getElementById('img-popup').classList.add('active'); }
-        window.closeImgPopup = () => { document.getElementById('img-popup').classList.remove('active'); }
 
-        // --- AUTH ---
+        // HISTORY NAVIGATION
+        window.openHistory = () => {
+            toggleSidebar(); 
+            $('app-content').classList.add('hidden');
+            $('page-history').classList.remove('hidden');
+            loadHistoryPage();
+        };
+        window.closeHistory = () => {
+            $('page-history').classList.add('hidden');
+            $('app-content').classList.remove('hidden');
+        };
+
+        // AUTH
         window.onload = () => {
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.opacity = '0';
-                setTimeout(() => document.getElementById('splash-screen').classList.add('hidden'), 500);
-            }, 2500);
-
-            if(localStorage.getItem('saved_lic')) document.getElementById('license-input').value = localStorage.getItem('saved_lic');
+            if(localStorage.getItem('saved_lic')) $('license-input').value = localStorage.getItem('saved_lic');
             const sess = localStorage.getItem('money_rider_sess');
             if(sess) { riderData = JSON.parse(sess); startApp(); }
-            else document.getElementById('login-screen').classList.remove('hidden');
+            else $('login-screen').classList.remove('hidden');
         };
 
         window.verifyLicense = async () => {
-            const key = document.getElementById('license-input').value.trim();
-            if(!key) return showToast("Enter License");
-            toggleLoader(true);
+            const key = $('license-input').value.trim();
+            if(!key) return alert("Enter License");
             const s = await get(ref(db, 'riders'));
             let valid = false;
             s.forEach(c => { if(c.val().license === key) { valid = true; riderData = { key: c.key, ...c.val() }; } });
-            toggleLoader(false);
             if(valid) {
-                if(document.getElementById('remember-me').checked) localStorage.setItem('saved_lic', key);
+                localStorage.setItem('saved_lic', key);
                 localStorage.setItem('money_rider_sess', JSON.stringify(riderData));
                 startApp();
-            } else showToast("Invalid License");
+            } else alert("Invalid License");
         };
 
         window.logout = () => { localStorage.removeItem('money_rider_sess'); location.reload(); };
 
-        // --- MAIN ---
+        // INIT
         function startApp() {
             document.querySelectorAll('.auth-screen').forEach(e => e.classList.add('hidden'));
-            document.getElementById('app-content').classList.remove('hidden');
-            document.getElementById('side-name').innerText = riderData.name;
+            $('app-content').classList.remove('hidden');
+            $('side-name').innerText = riderData.name;
             
             if(navigator.geolocation) {
                 navigator.geolocation.watchPosition(p => {
                     riderLoc = { lat: p.coords.latitude, lng: p.coords.longitude };
                     update(ref(db, `riders/${riderData.key}`), { lat: riderLoc.lat, lng: riderLoc.lng, lastSeen: Date.now() });
-                    if(map) updateMap();
+                    if(map && currentOrder) updateMap(); 
                 }, null, { enableHighAccuracy: true });
             }
-            listenOrders();
+            listenIncoming();
             recoverOrder();
         }
 
-        // --- SHEET GESTURES ---
-        const sheet = document.getElementById('bottom-sheet');
-        const header = document.getElementById('sheet-header');
+        window.toggleSidebar = () => {
+            const sb = document.querySelector('.sidebar');
+            const ov = document.querySelector('.sidebar-overlay');
+            sb.classList.toggle('open'); ov.classList.toggle('open');
+        };
+
+        // SHEET DRAG & CLICK
+        const sheet = $('bottom-sheet');
+        const header = $('sheet-header');
         let startY = 0;
 
         header.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; });
         header.addEventListener('touchmove', (e) => {
             const currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-            if(diff < -50) openSheet(); // Swipe Up
-            if(diff > 50) closeSheet(); // Swipe Down
+            if(currentY < startY - 30) { sheet.classList.add('open'); isSheetOpen=true; }
+            if(currentY > startY + 30) { sheet.classList.remove('open'); isSheetOpen=false; }
         });
-        header.addEventListener('click', () => { if(isSheetOpen) closeSheet(); else openSheet(); });
+        header.addEventListener('click', () => { 
+            isSheetOpen = !isSheetOpen;
+            sheet.classList.toggle('open', isSheetOpen);
+        });
 
-        function openSheet() { sheet.classList.add('open'); isSheetOpen = true; }
-        function closeSheet() { sheet.classList.remove('open'); isSheetOpen = false; }
-
-        // --- LOGIC ---
-        function listenOrders() {
+        // ORDERS
+        function listenIncoming() {
             onValue(ref(db, 'orders'), snap => {
                 let found = false;
                 if(snap.exists()) {
                     snap.forEach(user => {
                         user.forEach(order => {
                             const o = order.val();
-                            if(o.status === 'pending' && !heldOrders[order.key]) {
+                            if(o.status === 'pending') {
                                 incomingRef = { uid: user.key, oid: order.key, data: o };
-                                document.getElementById('incoming-modal').classList.remove('hidden');
-                                document.getElementById('alert-addr').innerText = o.address.area;
-                                document.getElementById('alert-earn').innerText = "৳" + o.totals.deliveryCharge;
+                                $('incoming-modal').classList.remove('hidden');
+                                $('alert-addr').innerText = o.address.area;
+                                $('alert-earn').innerText = "৳" + o.totals.deliveryCharge;
                                 found = true;
                             }
                         });
                     });
                 }
-                if(!found) document.getElementById('incoming-modal').classList.add('hidden');
+                if(!found) $('incoming-modal').classList.add('hidden');
             });
         }
 
-        window.holdOrder = () => {
+        window.acceptOrder = async () => {
             if(!incomingRef) return;
-            heldOrders[incomingRef.oid] = incomingRef;
-            document.getElementById('incoming-modal').classList.add('hidden');
-            renderHold();
-            incomingRef = null;
-        };
-        
-        function renderHold() {
-            const l = document.getElementById('hold-list-container'); l.innerHTML = "";
-            Object.keys(heldOrders).forEach(k => {
-                const i = heldOrders[k];
-                l.innerHTML += `<div style="background:#fff3e0; padding:10px; margin-bottom:5px; border-radius:10px; border:1px solid orange">
-                    <b>#${i.oid.slice(-4)}</b> <br> ${i.data.address.area}
-                    <div style="display:flex; gap:10px; margin-top:5px">
-                        <button onclick="acceptHold('${k}')" style="background:green; color:white; border:none; padding:5px 10px; border-radius:5px">Accept</button>
-                        <button onclick="delete heldOrders['${k}']; renderHold()" style="background:red; color:white; border:none; padding:5px 10px; border-radius:5px">Del</button>
-                    </div>
-                </div>`;
-            });
-        }
-
-        window.acceptHold = (k) => { incomingRef = heldOrders[k]; acceptOrder(true); };
-
-        window.acceptOrder = async (hold) => {
-            if(!incomingRef) return;
-            if(currentOrder) return showToast("Finish current order first");
-            toggleLoader(true);
-            
             const path = `orders/${incomingRef.uid}/${incomingRef.oid}`;
             const s = await get(child(ref(db), `${path}/status`));
-            
             if(s.val() === 'pending') {
                 await update(ref(db, path), { status: 'accepted', riderId: riderData.key, riderName: riderData.name, riderPhone: riderData.phone||"N/A" });
                 currentOrder = { id: incomingRef.oid, uid: incomingRef.uid, ...incomingRef.data, status: 'accepted' };
-                document.getElementById('incoming-modal').classList.add('hidden');
-                if(hold) { delete heldOrders[incomingRef.oid]; renderHold(); }
+                $('incoming-modal').classList.add('hidden');
                 initDelivery();
-            } else {
-                showToast("Already Taken");
-                document.getElementById('incoming-modal').classList.add('hidden');
-            }
-            toggleLoader(false);
+            } else { alert("Taken"); $('incoming-modal').classList.add('hidden'); }
         };
 
         function recoverOrder() {
@@ -465,91 +516,161 @@
                         });
                     });
                 }
-                if(act) { document.getElementById('incoming-modal').classList.add('hidden'); initDelivery(); }
-                else { document.getElementById('page-scanning').classList.remove('hidden'); document.getElementById('page-delivery').classList.add('hidden'); }
+                if(act) { $('incoming-modal').classList.add('hidden'); initDelivery(); }
+                else { $('page-scanning').classList.remove('hidden'); $('page-delivery').classList.add('hidden'); }
             }, {onlyOnce:true});
         }
 
-        // --- MAP & DELIVERY ---
         function initDelivery() {
-            document.getElementById('page-scanning').classList.add('hidden');
-            document.getElementById('page-delivery').classList.remove('hidden');
+            $('page-scanning').classList.add('hidden');
+            $('page-delivery').classList.remove('hidden');
             
-            if(!map) { map = L.map('map-view', {zoomControl:false}).setView([riderLoc.lat, riderLoc.lng], 14); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); }
+            if(!map) { 
+                map = L.map('map-view', {zoomControl:false}).setView([riderLoc.lat, riderLoc.lng], 14); 
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 20 }).addTo(map); 
+            }
             setTimeout(() => { map.invalidateSize(); updateMap(); }, 500);
 
-            onValue(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}/location`), s => { if(s.exists()) { currentOrder.location = s.val(); updateMap(); } });
-
-            // Fill UI
-            document.getElementById('mini-order-id').innerText = "#" + currentOrder.id.slice(-5).toUpperCase();
-            
-            get(ref(db, `users/${currentOrder.uid}/profile`)).then(s => {
-                const p = s.val() || {};
-                document.getElementById('cust-name').innerText = p.displayName || "Customer";
-                document.getElementById('cust-img').src = p.avatarUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-                currentOrder.custPhone = p.phone || currentOrder.address.contactNumber;
+            // REAL-TIME DATA LISTENER
+            const orderRef = ref(db, `orders/${currentOrder.uid}/${currentOrder.id}`);
+            onValue(orderRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    currentOrder = { ...currentOrder, ...data };
+                    updateUI(); // Update texts/locations
+                }
             });
-            
-            const addr = currentOrder.address.area === 'DOHS' ? `DOHS Rd ${currentOrder.address.road}, House ${currentOrder.address.house}` : currentOrder.address.details;
-            document.getElementById('cust-addr').innerText = addr;
-            document.getElementById('stat-earn').innerText = currentOrder.totals.deliveryCharge;
-            document.getElementById('bill-grand').innerText = currentOrder.payment.method==='cod'? "৳ "+currentOrder.totals.grandTotal : "PAID";
-            
-            document.getElementById('item-list').innerHTML = currentOrder.items.map(i => `<div class="item-row"><img src="${i.image}" style="width:40px;height:40px;border-radius:5px"><div>${i.name} <b style="color:var(--primary)">x${i.qty}</b></div></div>`).join('');
+
+            // Initial UI Update
+            updateUI();
             
             resetSlider(currentOrder.status === 'ontheway');
-            // Do NOT open sheet automatically, keep it peeked
-            closeSheet();
+            isSheetOpen = false; sheet.classList.remove('open');
         }
 
-        function updateMap() {
-            if(!map) return;
-            const rIcon = L.divIcon({className:'x', html:`<div style='width:40px;height:40px;background:#FF5722;border:3px solid white;border-radius:50%;display:flex;justify-content:center;align-items:center;color:white;box-shadow:0 5px 15px rgba(0,0,0,0.3)'><i class='fas fa-motorcycle'></i></div>`});
-            const cIcon = L.divIcon({className:'x', html:`<div style='width:40px;height:40px;background:#333;border:3px solid white;border-radius:50%;display:flex;justify-content:center;align-items:center;color:white;box-shadow:0 5px 15px rgba(0,0,0,0.3)'><i class='fas fa-map-marker-alt'></i></div>`});
-
-            if(rMarker) rMarker.setLatLng([riderLoc.lat, riderLoc.lng]); else rMarker = L.marker([riderLoc.lat, riderLoc.lng], {icon: rIcon}).addTo(map);
+        function updateUI() {
+            if(!currentOrder) return;
             
+            $('mini-id').innerText = currentOrder.id.slice(-5).toUpperCase();
+            
+            // Text Updates
+            if(currentOrder.address) $('cust-addr').innerText = currentOrder.address.details + ", " + currentOrder.address.area;
+            if(currentOrder.totals) $('bill-grand').innerText = currentOrder.payment.method==='cod'? "Tk "+currentOrder.totals.grandTotal : "PAID";
+            
+            // Items
+            if(currentOrder.items) {
+                const itemsHtml = currentOrder.items.map(i => `
+                    <div class="item-box-final">
+                        <div class="item-left">
+                            <img src="${i.image}" class="item-img">
+                            <div style="font-weight:600; font-size:1rem">${i.name}</div>
+                        </div>
+                        <div class="item-qty-text">x${i.qty}</div>
+                    </div>
+                `).join('');
+                $('items-list-content').innerHTML = itemsHtml;
+            }
+
+            // Profile fetch (Static usually, but good to refresh)
+             get(ref(db, `users/${currentOrder.uid}/profile`)).then(s => {
+                const p = s.val() || {};
+                $('cust-name').innerText = p.displayName || "Customer";
+                $('cust-img').src = p.avatarUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                currentOrder.custPhone = p.phone || currentOrder.address.contactNumber;
+            });
+
+            if(map) updateMap();
+        }
+
+
+        async function updateMap() {
+            if(!map || !currentOrder) return;
+            const rIcon = L.divIcon({className:'x', html:`<div style="width:20px;height:20px;background:#2196F3;border:3px solid white;border-radius:50%;box-shadow:0 3px 10px rgba(0,0,0,0.2)"></div>`});
+            if(rMarker) rMarker.setLatLng([riderLoc.lat, riderLoc.lng]); else rMarker = L.marker([riderLoc.lat, riderLoc.lng], {icon: rIcon}).addTo(map);
+
             if(currentOrder.location && currentOrder.location.enabled) {
-                const cLoc = [currentOrder.location.lat, currentOrder.location.lng];
-                if(cMarker) cMarker.setLatLng(cLoc); else cMarker = L.marker(cLoc, {icon: cIcon}).addTo(map);
-                if(routeLine) map.removeLayer(routeLine);
-                routeLine = L.polyline([[riderLoc.lat, riderLoc.lng], cLoc], {color:'#FF5722', weight:5}).addTo(map);
-                try{map.fitBounds(L.featureGroup([rMarker, cMarker]).getBounds(),{padding:[50,50]})}catch(e){}
+                const cLoc = { lat: currentOrder.location.lat, lng: currentOrder.location.lng };
+                const cIcon = L.divIcon({className:'x', html:`<div style="width:40px;height:40px;background:#FF5722;border-radius:50% 50% 0 50%;border:3px solid white;display:flex;align-items:center;justify-content:center;color:white;transform:rotate(45deg);box-shadow:0 5px 15px rgba(255,87,34,0.4)"><i class="fas fa-home" style="transform:rotate(-45deg)"></i></div>`});
                 
-                // Dist
-                const R=6371, dLat=(cLoc[0]-riderLoc.lat)*Math.PI/180, dLon=(cLoc[1]-riderLoc.lng)*Math.PI/180;
-                const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(riderLoc.lat*Math.PI/180)*Math.cos(cLoc[0]*Math.PI/180) * Math.sin(dLon/2)*Math.sin(dLon/2);
-                document.getElementById('stat-dist').innerText = (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1) + " km";
+                if(cMarker) cMarker.setLatLng([cLoc.lat, cLoc.lng]); else cMarker = L.marker([cLoc.lat, cLoc.lng], {icon: cIcon}).addTo(map);
+
+                try {
+                    const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${riderLoc.lng},${riderLoc.lat};${cLoc.lng},${cLoc.lat}?overview=full&geometries=geojson`);
+                    const data = await res.json();
+                    if(data.routes && data.routes[0]) {
+                        const r = data.routes[0];
+                        if(routeLine) map.removeLayer(routeLine);
+                        routeLine = L.polyline(r.geometry.coordinates.map(p=>[p[1],p[0]]), {color:'#333', weight:5}).addTo(map);
+                        
+                        const timeMin = Math.ceil((r.distance / 1000) / 20 * 60); 
+                        $('mini-eta').innerText = timeMin + " min";
+                        $('mini-dist').innerText = (r.distance/1000).toFixed(2) + " km";
+                    }
+                } catch(e) {}
             }
         }
 
-        // --- SLIDER ---
+        // SLIDER
         function resetSlider(drop) {
-            const t = document.getElementById('slider-thumb'), x = document.getElementById('slider-text');
-            t.style.transform = 'translateX(0)';
-            if(drop) { x.innerText = "SWIPE TO COMPLETE"; t.style.background = "#00C853"; } 
-            else { x.innerText = "SWIPE TO PICKUP"; t.style.background = "#FF5722"; }
+            const t = $('slider-thumb'), x = $('slider-text'), f = $('slider-fill');
+            t.style.transform = 'translateX(0)'; f.style.width = '0px';
+            
+            if(drop) { x.innerText = "SWIPE TO COMPLETE"; t.style.background = "#00C853"; f.style.background="#00E676"; } 
+            else { x.innerText = "SWIPE TO PICK UP"; t.style.background = "#FF5722"; f.style.background="#FF7043"; }
             
             let startX, max;
-            const start=e=>{ startX = e.touches?e.touches[0].clientX:e.clientX; max=document.getElementById('slider-btn').offsetWidth-60; document.addEventListener('touchmove',move); document.addEventListener('touchend',end); };
-            const move=e=>{ let dx=(e.touches?e.touches[0].clientX:e.clientX)-startX; if(dx<0)dx=0; if(dx>max)dx=max; t.style.transform=`translateX(${dx}px)`; };
+            const start=e=>{ startX=e.touches?e.touches[0].clientX:e.clientX; max=$('slider-btn').offsetWidth-52; document.addEventListener('touchmove',move); document.addEventListener('touchend',end); };
+            const move=e=>{ let dx=(e.touches?e.touches[0].clientX:e.clientX)-startX; if(dx<0)dx=0; if(dx>max)dx=max; t.style.transform=`translateX(${dx}px)`; f.style.width=(dx+25)+"px"; };
             const end=async()=>{ 
                 let cur = parseFloat(t.style.transform.replace(/[^\d.]/g,''))||0;
                 if(cur>max-20) { 
-                    t.style.transform=`translateX(${max}px)`; 
-                    if(drop) { await update(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}`), {status:'delivered', completedAt:Date.now()}); showToast("Delivered!"); currentOrder=null; if(map){map.removeLayer(cMarker);map.removeLayer(routeLine);cMarker=null;} document.getElementById('page-scanning').classList.remove('hidden'); document.getElementById('page-delivery').classList.add('hidden'); }
-                    else { await update(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}`), {status:'ontheway'}); showToast("Picked Up!"); resetSlider(true); }
-                } else t.style.transform='translateX(0)';
+                    t.style.transform=`translateX(${max}px)`; f.style.width="100%";
+                    if(drop) { 
+                        await update(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}`), {status:'delivered', completedAt:Date.now()}); 
+                        alert("Delivered!"); currentOrder=null; if(map){map.removeLayer(cMarker);map.removeLayer(routeLine);cMarker=null;} 
+                        $('page-scanning').classList.remove('hidden'); $('page-delivery').classList.add('hidden'); 
+                    } else { 
+                        await update(ref(db, `orders/${currentOrder.uid}/${currentOrder.id}`), {status:'ontheway'}); resetSlider(true); 
+                    }
+                } else { t.style.transform='translateX(0)'; f.style.width='0px'; }
                 document.removeEventListener('touchmove',move); document.removeEventListener('touchend',end); 
             };
             t.addEventListener('touchstart', start); t.addEventListener('mousedown', start);
         }
 
-        // ACTIONS
-        window.toggleSidebar = () => { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open'); };
-        window.refreshMapData = () => { if(map) { map.invalidateSize(); updateMap(); showToast("Refreshed"); } };
-        window.callCustomer = () => { if(currentOrder.custPhone) window.open(`tel:${currentOrder.custPhone}`); else showToast("No Phone"); };
-        window.openMap = () => { if(currentOrder.location) window.open(`https://www.google.com/maps/dir/?api=1&destination=${currentOrder.location.lat},${currentOrder.location.lng}`); else showToast("No Loc"); };
+        async function loadHistoryPage() {
+            const list = $('history-list-content');
+            list.innerHTML = `<div style="text-align:center;padding:20px">Loading...</div>`;
+            const snap = await get(ref(db, 'orders'));
+            let html = "";
+            if(snap.exists()) {
+                snap.forEach(user => {
+                    user.forEach(order => {
+                        const o = order.val();
+                        if(o.riderId === riderData.key && o.status === 'delivered') {
+                            const date = new Date(o.completedAt || Date.now()).toLocaleDateString();
+                            html += `
+                            <div class="history-card">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:5px">
+                                    <span style="font-weight:700">#${order.key.slice(-5).toUpperCase()}</span>
+                                    <span style="color:var(--primary); font-weight:700">৳${o.totals.grandTotal}</span>
+                                </div>
+                                <div style="color:#666; font-size:0.9rem">${o.address.area}</div>
+                                <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:0.8rem; color:#aaa">
+                                    <span>${date}</span>
+                                    <span style="color:#00C853; font-weight:700">Completed</span>
+                                </div>
+                            </div>`;
+                        }
+                    });
+                });
+            }
+            list.innerHTML = html || `<div style="text-align:center;padding:20px">No history found</div>`;
+        }
+
+        window.recenterMap = () => { if(map) { map.invalidateSize(); updateMap(); map.setView([riderLoc.lat, riderLoc.lng], 15); } };
+        window.callCustomer = () => { if(currentOrder.custPhone) window.open(`tel:${currentOrder.custPhone}`); else alert("No Phone"); };
+        window.openMap = () => { if(currentOrder.location) window.open(`https://www.google.com/maps/dir/?api=1&destination=${currentOrder.location.lat},${currentOrder.location.lng}`); else alert("No Location"); };
     </script>
 </body>
 </html>
